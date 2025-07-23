@@ -1,34 +1,94 @@
 // backend/routes/admin.js
 const express = require('express');
 const db = require('../db');
+const bcrypt = require('bcryptjs');
 const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 const router = express.Router();
 
-// Middleware ini akan berlaku untuk semua rute di file ini
-// Memastikan hanya admin yang sudah login yang bisa mengakses
+// Middleware ini akan melindungi semua rute di file ini
 router.use(isAuthenticated, isAdmin);
 
-// CRUD Users
+// === CRUD USERS ===
+// GET all users
 router.get('/users', async (req, res) => {
-  const [users] = await db.query('SELECT id, username, email, role FROM users');
-  res.json(users);
+  try {
+    const [users] = await db.query('SELECT id, username, email, role FROM users ORDER BY created_at DESC');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
 });
 
+// UPDATE a user
+router.put('/users/:id', async (req, res) => {
+    try {
+        const { username, email, role } = req.body;
+        await db.query('UPDATE users SET username = ?, email = ?, role = ? WHERE id = ?', [username, email, role, req.params.id]);
+        res.json({ message: 'User berhasil diperbarui' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// DELETE a user
 router.delete('/users/:id', async (req, res) => {
-    await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
-    res.json({ message: 'User berhasil dihapus' });
+    try {
+        await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+        res.json({ message: 'User berhasil dihapus' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
 
-// CRUD Rooms (Contoh Sederhana)
-// Anda perlu membuat tabel 'rooms' terlebih dahulu di database
+
+// === CRUD ROOMS ===
+// GET all rooms
 router.get('/rooms', async (req, res) => {
-    // Logika untuk mengambil semua kamar
-    res.json({ message: 'Mengambil semua data kamar' });
+    try {
+        const [rooms] = await db.query('SELECT * FROM rooms ORDER BY created_at DESC');
+        res.json(rooms);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
 
+// CREATE a new room
 router.post('/rooms', async (req, res) => {
-    // Logika untuk menambah kamar baru
-    res.json({ message: 'Kamar baru berhasil ditambahkan' });
+    try {
+        const { name, type, price, description, image_url } = req.body;
+        await db.query(
+            'INSERT INTO rooms (name, type, price, description, image_url) VALUES (?, ?, ?, ?, ?)',
+            [name, type, price, description, image_url]
+        );
+        res.status(201).json({ message: 'Kamar berhasil ditambahkan' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
+
+// UPDATE a room
+router.put('/rooms/:id', async (req, res) => {
+    try {
+        const { name, type, price, description, image_url } = req.body;
+        await db.query(
+            'UPDATE rooms SET name = ?, type = ?, price = ?, description = ?, image_url = ? WHERE id = ?',
+            [name, type, price, description, image_url, req.params.id]
+        );
+        res.json({ message: 'Kamar berhasil diperbarui' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// DELETE a room
+router.delete('/rooms/:id', async (req, res) => {
+    try {
+        await db.query('DELETE FROM rooms WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Kamar berhasil dihapus' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 
 module.exports = router;

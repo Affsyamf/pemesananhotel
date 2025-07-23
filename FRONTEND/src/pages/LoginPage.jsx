@@ -7,7 +7,6 @@ import AuthLayout from '../components/AuthLayout';
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  // const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -16,74 +15,54 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const toastId = toast.loading('Mencoba masuk...');
+
     try {
       const response = await axios.post('http://localhost:5001/api/auth/login', formData);
       
-      // --- PERBAIKAN DIMULAI DI SINI ---
+      const { token, role } = response.data;
 
-      // 1. Simpan token DAN role ke localStorage agar aplikasi tahu siapa yang login
-       toast.success('Login berhasil!');
+      // Simpan token dan role ke localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('role', response.data.role);
-      
-      navigate('/dashboard');
+      toast.success('Login berhasil!', { id: toastId });
+
+      // --- INI LOGIKA UTAMANYA ---
+      // Periksa peran dan arahkan ke dasbor yang sesuai
+      if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+      // --- AKHIR LOGIKA UTAMA ---
+
     } catch (err) {
-      // Ganti setError dengan toast.error
-      toast.error(err.response?.data?.message || 'Login gagal');
+      toast.error(err.response?.data?.message || 'Login gagal', { id: toastId });
     }
   };
-
-      // --- AKHIR PERBAIKAN ---
 
   return (
     <AuthLayout title="Login ke Akun Anda">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="text-sm font-bold text-gray-600 block">Email</label>
-          <input
-            name="email"
-            type="email"
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md mt-1"
-            required
-          />
+          <input name="email" type="email" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1" required />
         </div>
         <div>
           <label className="text-sm font-bold text-gray-600 block">Password</label>
-          <input
-            name="password"
-            type="password"
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md mt-1"
-            required
-          />
+          <input name="password" type="password" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1" required />
         </div>
         <div className="text-right">
-          <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
-            Lupa Password?
-          </Link>
+          <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">Lupa Password?</Link>
         </div>
         <div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold"
-          >
-            Login
-          </button>
+          <button type="submit" className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold">Login</button>
         </div>
       </form>
       <p className="text-sm text-center mt-4">
         Belum punya akun?{' '}
-        <Link to="/register" className="text-blue-600 hover:underline">
-          Daftar di sini
-        </Link>
-      </p>
-      <p className="text-sm text-center mt-4">
-        Kembali ke Dashboard{' '}
-        <Link to="/" className="text-blue-600 hover:underline">
-          Klik
-        </Link>
+        <Link to="/register" className="text-blue-600 hover:underline">Daftar di sini</Link>
       </p>
     </AuthLayout>
   );
