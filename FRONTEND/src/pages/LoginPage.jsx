@@ -64,6 +64,10 @@ function LoginPage() {
         Belum punya akun?{' '}
         <Link to="/register" className="text-blue-600 hover:underline">Daftar di sini</Link>
       </p>
+      <p className="text-sm text-center mt-4">
+        Kembali ke halaman utama{' '}
+        <Link to="/" className="text-blue-600 hover:underline">KLIK</Link>
+      </p>
     </AuthLayout>
   );
 }

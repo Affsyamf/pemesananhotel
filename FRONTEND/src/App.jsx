@@ -3,40 +3,50 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
-// Komponen dan Halaman
+// Halaman Publik
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import UserDashboard from './pages/UserDashboard';
 
-// Impor untuk Admin
+// Halaman & Komponen Terlindungi
+import ProtectedRoute from './components/ProtectedRoute';
+import UserLayout from './components/UserLayout';
+import BookRoomPage from './pages/BookRoomPage';
+import MyBookingsPage from './pages/MyBookingsPage';
+import PrintBookingPage from './pages/PrintBookingPage'; 
 import AdminLayout from './components/admin/AdminLayout';
 import ManageUsersPage from './pages/ManageUsersPage';
 import ManageRoomsPage from './pages/ManageRoomsPage';
-// import ManageRoomsPage from './pages/ManageRoomsPage'; // <-- Buat ini selanjutnya
 
 function App() {
   return (
     <Router>
       <Toaster position="top-center" reverseOrder={false} />
-
       <Routes>
         {/* Rute Publik */}
         <Route path="/" element={<DashboardPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Rute Terlindungi untuk User */}
+        {/* --- RUTE USER YANG DIPERBARUI --- */}
+        <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['user']} />}>
+          <Route element={<UserLayout />}>
+            {/* INI KUNCINYA: Saat user ke /dashboard, langsung arahkan ke "book" */}
+            <Route index element={<Navigate to="book" replace />} />
+            <Route path="book" element={<BookRoomPage />} />
+            <Route path="my-bookings" element={<MyBookingsPage />} />
+          </Route>
+        </Route>
+        
+        {/* Rute Cetak terpisah agar tidak ada navbar */}
         <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-          <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/print-booking/:bookingId" element={<PrintBookingPage />} />
         </Route>
 
-        {/* Rute Terlindungi untuk Admin */}
+        {/* Rute Admin (tidak berubah) */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route element={<AdminLayout />}>
-            {/* Redirect dari /admin ke /admin/users */}
-            <Route index element={<Navigate to="users" replace />} /> 
+            <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<ManageUsersPage />} />
             <Route path="rooms" element={<ManageRoomsPage />} />
           </Route>
