@@ -18,11 +18,20 @@ function LoginPage() {
     setError('');
     try {
       const response = await axios.post('http://localhost:5001/api/auth/login', formData);
-      // Simpan token ke localStorage
+      
+      // --- PERBAIKAN DIMULAI DI SINI ---
+
+      // 1. Simpan token DAN role ke localStorage agar aplikasi tahu siapa yang login
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
+
       alert('Login berhasil!');
-      // Arahkan ke halaman utama/dashboard (misal '/')
-      navigate('/');
+      
+      // 2. Arahkan ke dasbor user ("/dashboard"), BUKAN ke halaman utama ("/")
+      navigate('/dashboard'); 
+
+      // --- AKHIR PERBAIKAN ---
+
     } catch (err) {
       setError(err.response?.data?.message || 'Login gagal');
     }

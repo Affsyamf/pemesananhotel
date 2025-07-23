@@ -1,31 +1,40 @@
 // frontend/src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Halaman Home sederhana untuk testing setelah login
-function HomePage() {
-  return (
-    <div className="text-center p-10">
-      <h1 className="text-4xl font-bold">Selamat Datang!</h1>
-      <p className="mt-4">Anda telah berhasil login.</p>
-    </div>
-  );
-}
+// Halaman Publik
+import DashboardPage from './pages/DashboardPage';
+import LoginPage from './pages/LoginPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import RegisterPage from './pages/RegisterPage';
+
+// Halaman Terlindungi
+import ProtectedRoute from './components/ProtectedRoute';
+import UserDashboard from './pages/UserDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* Rute Publik */}
+        <Route path="/" element={<DashboardPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Anda bisa membuat halaman dashboard di sini nanti */}
-        <Route path="/dashboard" element={<HomePage />} />
+        {/* Rute Terlindungi untuk User */}
+        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+          <Route path="/dashboard" element={<UserDashboard />} />
+          {/* Tambahkan rute user lain di sini, misal /booking */}
+        </Route>
+
+        {/* Rute Terlindungi untuk Admin */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          {/* Tambahkan rute admin lain di sini, misal /admin/users */}
+        </Route>
       </Routes>
     </Router>
   );

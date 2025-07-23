@@ -57,13 +57,21 @@ router.post('/login', async (req, res) => {
     }
 
     // Buat token JWT
+   const payload = {
+      id: user.id,
+      username: user.username,
+      role: user.role // Tambahkan role
+    };
+
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '8h' }
     );
 
-    res.json({ message: 'Login berhasil', token });
+    // Kirim token dan role ke frontend
+    res.json({ message: 'Login berhasil', token, role: user.role });
+    // --- AKHIR PERUBAHAN ---
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server' });

@@ -1,9 +1,12 @@
 // backend/index.js
+const adminRoutes = require('./routes/admin')
+const authRoutes = require('./routes/auth');
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth'); // <-- Import rute auth
+ // <-- Import rute auth
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,6 +17,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes); // <-- Gunakan rute auth
+app.use('/api/admin', adminRoutes);
+
 
 app.get('/api/test', (req, res) => {
   res.json({ message: '🎉 Halo! API backend berhasil terhubung!' });
