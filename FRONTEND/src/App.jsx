@@ -13,6 +13,7 @@ import UserDashboard from './pages/UserDashboard';
 // Impor untuk Admin
 import AdminLayout from './components/admin/AdminLayout';
 import ManageUsersPage from './pages/ManageUsersPage';
+import ManageRoomsPage from './pages/ManageRoomsPage';
 // import ManageRoomsPage from './pages/ManageRoomsPage'; // <-- Buat ini selanjutnya
 
 function App() {
@@ -37,7 +38,7 @@ function App() {
             {/* Redirect dari /admin ke /admin/users */}
             <Route index element={<Navigate to="users" replace />} /> 
             <Route path="users" element={<ManageUsersPage />} />
-            {/* <Route path="rooms" element={<ManageRoomsPage />} /> */}
+            <Route path="rooms" element={<ManageRoomsPage />} />
           </Route>
         </Route>
       </Routes>

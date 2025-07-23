@@ -5,9 +5,8 @@ import { Pencil, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-function UsersTable({ data, refetch }) {
-  // Fungsi handleDelete sekarang aman karena `refetch` stabil
-  
+// Terima prop 'onEdit' dari parent
+function UsersTable({ data, refetch, onEdit }) {
   const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus user ini?")) {
         try {
@@ -16,14 +15,13 @@ function UsersTable({ data, refetch }) {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('User berhasil dihapus');
-            refetch(); // Panggil fungsi refetch dari props
+            refetch();
         } catch (error) {
-            toast.error( error.response?.data?.message ||'Gagal menghapus user');
+            toast.error(error.response?.data?.message || 'Gagal menghapus user');
         }
     }
   }
 
-  // Definisi kolom
   const columns = useMemo(() => [
     { accessorKey: 'id', header: 'ID' },
     { accessorKey: 'username', header: 'Username' },
@@ -34,7 +32,8 @@ function UsersTable({ data, refetch }) {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex space-x-2">
-          <button className="p-1 text-blue-600 hover:text-blue-800">
+          {/* Tombol Edit sekarang memanggil fungsi onEdit */}
+          <button onClick={() => onEdit(row.original)} className="p-1 text-blue-600 hover:text-blue-800">
             <Pencil size={18} />
           </button>
           <button onClick={() => handleDelete(row.original.id)} className="p-1 text-red-600 hover:text-red-800">
@@ -43,7 +42,7 @@ function UsersTable({ data, refetch }) {
         </div>
       ),
     },
-  ], []); // <-- Hapus `refetch` dari dependency array, karena tidak perlu
+  ], []);
 
   const table = useReactTable({
     data,
@@ -52,6 +51,7 @@ function UsersTable({ data, refetch }) {
   });
 
   return (
+    // ... sisa kode JSX tabel tidak berubah ...
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
         <thead className="bg-gray-50">
