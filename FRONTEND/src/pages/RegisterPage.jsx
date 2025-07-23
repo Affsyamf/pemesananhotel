@@ -1,6 +1,7 @@
 // frontend/src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 
@@ -10,8 +11,7 @@ function RegisterPage() {
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -20,25 +20,25 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+   
+    // Tampilkan notifikasi loading
+    const toastId = toast.loading('Mendaftarkan akun...');
 
     try {
       const response = await axios.post('http://localhost:5001/api/auth/register', formData);
-      setSuccess(response.data.message + '. Anda akan dialihkan ke halaman login...');
+      toast.success(response.data.message + '. Anda akan dialihkan ke halaman login...', { id: toastId  });
+     
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registrasi gagal');
+      toast.error(err.response?.data?.message || 'Registrasi gagal', {id: toastId   });
     }
   };
 
   return (
     <AuthLayout title="Buat Akun Baru">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-        {success && <p className="text-green-500 text-sm text-center">{success}</p>}
         <div>
           <label className="text-sm font-bold text-gray-600 block">Username</label>
           <input

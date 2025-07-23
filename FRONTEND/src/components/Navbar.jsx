@@ -32,7 +32,7 @@ function Navbar() {
           ))}
         </div>
         <RouterLink to="/login">
-          <button className="hidden md:block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
             Login
           </button>
         </RouterLink>

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import AuthLayout from '../components/AuthLayout';
 
 function AdminLoginPage() {
@@ -21,18 +22,19 @@ function AdminLoginPage() {
       
       // Cek apakah rolenya admin
       if (response.data.role !== 'admin') {
-        setError('Akses ditolak. Akun ini bukan admin.');
+        toast.error('Akses ditolak. Akun ini bukan admin.');
         return;
       }
 
+      toast.success('Login admin berhasil!');
       // Simpan token dan role
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.role);
       
-      alert('Login admin berhasil!');
+    //   alert('Login admin berhasil!');
       navigate('/admin/dashboard'); // Arahkan ke dasbor admin
     } catch (err) {
-      setError(err.response?.data?.message || 'Login gagal');
+      toast.error(err.response?.data?.message || 'Login gagal');
     }
   };
 

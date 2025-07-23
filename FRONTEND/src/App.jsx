@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import RegisterPage from './pages/RegisterPage';
+import { Toaster } from 'react-hot-toast';
 
 // Halaman Terlindungi
 import ProtectedRoute from './components/ProtectedRoute';
@@ -17,6 +18,11 @@ import AdminDashboard from './pages/AdminDashboard';
 function App() {
   return (
     <Router>
+        {/* 2. Tambahkan komponen Toaster di sini */}
+      <Toaster 
+        position="top-center" 
+        reverseOrder={false}
+      />
       <Routes>
         {/* Rute Publik */}
         <Route path="/" element={<DashboardPage />} />
