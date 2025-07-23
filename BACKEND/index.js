@@ -1,6 +1,8 @@
 // backend/index.js
 const adminRoutes = require('./routes/admin')
 const authRoutes = require('./routes/auth');
+const publicRoutes = require('./routes/public');
+
 
 const express = require('express');
 const cors = require('cors');
@@ -18,7 +20,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes); // <-- Gunakan rute auth
 app.use('/api/admin', adminRoutes);
-
+app.use('/api', publicRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: '🎉 Halo! API backend berhasil terhubung!' });
