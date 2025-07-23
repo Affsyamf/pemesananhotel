@@ -1,0 +1,52 @@
+// frontend/src/components/admin/RoomCard.jsx
+import React from 'react';
+import { Pencil, Trash2, BedDouble, DollarSign, Package } from 'lucide-react';
+
+function RoomCard({ room, onEdit, onDelete }) {
+  // Format harga menjadi format Rupiah
+  const formattedPrice = new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(room.price);
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+      <img
+        src={room.image_url || 'https://via.placeholder.com/400x250/E2E8F0/4A5568?text=No+Image'}
+        alt={room.name}
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-4 flex flex-col flex-grow">
+        <h3 className="text-xl font-bold text-gray-800">{room.name}</h3>
+        <p className="text-sm text-gray-500 mb-2">{room.type}</p>
+        
+        <div className="mt-2 space-y-2 text-sm text-gray-600 flex-grow">
+          <div className="flex items-center">
+            <DollarSign size={16} className="mr-2 text-green-500" />
+            <span>{formattedPrice} / malam</span>
+          </div>
+          <div className="flex items-center">
+            <Package size={16} className="mr-2 text-blue-500" />
+            <span>Tersedia: {room.quantity} kamar</span>
+          </div>
+          <div className="flex items-start">
+            <BedDouble size={16} className="mr-2 text-purple-500 mt-1" />
+            <p className="flex-1">Fasilitas: {room.facilities || '-'}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-2">
+          <button onClick={() => onEdit(room)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full">
+            <Pencil size={18} />
+          </button>
+          <button onClick={() => onDelete(room.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-full">
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default RoomCard;

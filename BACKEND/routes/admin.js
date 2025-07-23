@@ -45,9 +45,11 @@ router.delete('/users/:id', async (req, res) => {
 // GET all rooms
 router.get('/rooms', async (req, res) => {
     try {
-        const [rooms] = await db.query('SELECT * FROM rooms ORDER BY created_at DESC');
+        // Secara eksplisit pilih semua kolom yang dibutuhkan
+        const [rooms] = await db.query('SELECT id, name, type, price, quantity, facilities, description, image_url, created_at FROM rooms ORDER BY created_at DESC');
         res.json(rooms);
     } catch (error) {
+        console.error(error); // Tambahkan ini untuk melihat error backend di terminal
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -55,10 +57,10 @@ router.get('/rooms', async (req, res) => {
 // CREATE a new room
 router.post('/rooms', async (req, res) => {
     try {
-        const { name, type, price, description, image_url } = req.body;
+        const { name, type, price, quantity, facilities, description, image_url } = req.body;
         await db.query(
             'INSERT INTO rooms (name, type, price, description, image_url) VALUES (?, ?, ?, ?, ?)',
-            [name, type, price, description, image_url]
+            [name, type, price, quantity, facilities, description, image_url]
         );
         res.status(201).json({ message: 'Kamar berhasil ditambahkan' });
     } catch (error) {
@@ -69,10 +71,10 @@ router.post('/rooms', async (req, res) => {
 // UPDATE a room
 router.put('/rooms/:id', async (req, res) => {
     try {
-        const { name, type, price, description, image_url } = req.body;
+        const { name, type, price, quantity, facilities, description, image_url } = req.body;
         await db.query(
-            'UPDATE rooms SET name = ?, type = ?, price = ?, description = ?, image_url = ? WHERE id = ?',
-            [name, type, price, description, image_url, req.params.id]
+            'UPDATE rooms SET name = ?, type = ?, price = ?, quantity = ?, facilities = ?, description = ?, image_url = ? WHERE id = ?',
+            [name, type, price, quantity, facilities, description, image_url, req.params.id]
         );
         res.json({ message: 'Kamar berhasil diperbarui' });
     } catch (error) {
