@@ -45,7 +45,7 @@ function MyBookingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 md:p-10">
+    <div className="container dark:bg-gray-800 mx-auto p-6 md:p-10">
       <h1 className="text-4xl font-bold text-gray-800 mb-8">Riwayat Pesanan Saya</h1>
         
       {loading ? <p>Memuat riwayat pesanan...</p> : bookings.length === 0 ? (
@@ -57,8 +57,8 @@ function MyBookingsPage() {
       ) : (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <table className="min-w-full divide-y dark:divide-gray-700 divide-gray-200">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th className="th-style">ID Pesanan</th>
                             <th className="th-style">Nama Kamar</th>
@@ -67,7 +67,7 @@ function MyBookingsPage() {
                             <th className="th-style">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                         {bookings.map(booking => (
                             <tr key={booking.id}>
                                 <td className="td-style font-mono">#{booking.id}</td>

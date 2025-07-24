@@ -17,13 +17,13 @@ function BookingModal({ isOpen, onClose, onSubmit, room }) {
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900">Form Pemesanan: {room.name}</Dialog.Title>
+              <Dialog.Panel className="w-full dark:bg-gray-800 max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title as="h3" className="text-xl dark:text-white font-bold leading-6 text-gray-900">Form Pemesanan: {room.name}</Dialog.Title>
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
-                  <div><label className="block text-sm font-medium">Nama Lengkap</label><input {...register('guest_name', { required: true })} className="input-style" /></div>
-                  <div><label className="block text-sm font-medium">Alamat</label><textarea {...register('guest_address', { required: true })} className="input-style" /></div>
+                  <div><label className="block dark:text-gray-300 text-sm font-medium">Nama Lengkap</label><input {...register('guest_name', { required: true })} className="input-style" /></div>
+                  <div><label className="block dark:text-gray-300 text-sm font-medium">Alamat</label><textarea {...register('guest_address', { required: true })} className="input-style" /></div>
                   <div>
-                    <label className="block text-sm font-medium">Tanggal Booking</label>
+                    <label className="block dark:text-gray-300 text-sm font-medium">Tanggal Booking</label>
                     <Controller control={control} name="booking_date" required render={({ field }) => (
                         <DatePicker placeholderText="Pilih tanggal" onChange={(date) => field.onChange(date)} selected={field.value} className="input-style w-full" minDate={new Date()} dateFormat="yyyy-MM-dd" />
                     )} />

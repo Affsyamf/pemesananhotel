@@ -72,7 +72,7 @@ function ManageUsersPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Manajemen Users</h1>
+        <h1 className="text-3xl font-bold dark:text-gray-200 text-gray-800">Manajemen Users</h1>
         {/* Tombol ini sekarang membuka modal untuk tambah user baru */}
         <button onClick={() => handleOpenModal(null)} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
           <Plus size={20} className="mr-2" />
@@ -83,7 +83,7 @@ function ManageUsersPage() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
            {/* Kirim fungsi handleOpenModal ke tabel untuk tombol edit */}
            <UsersTable data={users} refetch={fetchUsers} onEdit={handleOpenModal} />
         </div>

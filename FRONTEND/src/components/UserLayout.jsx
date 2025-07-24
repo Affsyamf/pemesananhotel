@@ -2,15 +2,15 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Hotel, ListChecks, LogOut, Menu } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
-// Komponen helper untuk link di sidebar
 const SidebarLink = ({ to, icon, children, onClick }) => (
   <NavLink
     to={to}
     onClick={onClick}
     className={({ isActive }) =>
-      `flex items-center px-4 py-2 mt-2 text-gray-600 transition-colors duration-300 transform rounded-md hover:bg-gray-200 ${
-        isActive ? 'bg-blue-100 text-blue-700' : ''
+      `flex items-center px-4 py-2 mt-2 text-gray-600 dark:text-gray-300 transition-colors duration-300 transform rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 ${
+        isActive ? 'bg-blue-100 text-blue-700 dark:bg-gray-700' : ''
       }`
     }
   >
@@ -29,13 +29,13 @@ function UserLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-30 w-64 px-4 py-4 overflow-y-auto transition duration-300 transform bg-white shadow-lg md:relative md:translate-x-0 ${
+      <div className={`fixed inset-y-0 left-0 z-30 w-64 px-4 py-4 overflow-y-auto transition duration-300 transform bg-white shadow-lg md:relative md:translate-x-0 dark:bg-gray-800 ${
           isSidebarOpen ? 'translate-x-0 ease-out' : '-translate-x-full ease-in'
         }`}>
         <div className="flex items-center justify-center h-20">
-          <h1 className="text-2xl font-bold text-blue-600">User Dashboard</h1>
+          <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">User Dashboard</h1>
         </div>
 
         <nav className="mt-10">
@@ -47,7 +47,7 @@ function UserLayout() {
           </SidebarLink>
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-4 py-2 mt-5 text-gray-600 transition-colors duration-300 transform rounded-md hover:bg-red-100"
+            className="flex items-center w-full px-4 py-2 mt-5 text-gray-600 dark:text-gray-300 transition-colors duration-300 transform rounded-md hover:bg-red-100 dark:hover:bg-red-900/50"
           >
             <LogOut className="w-5 h-5 text-red-500" />
             <span className="mx-4 font-medium">Logout</span>
@@ -57,13 +57,13 @@ function UserLayout() {
 
       {/* Main Content */}
       <div className="flex flex-col flex-grow">
-        <header className="h-20 flex items-center justify-between md:justify-end px-6 bg-white shadow-md">
-          {/* Tombol Hamburger, hanya muncul di layar kecil */}
+        <header className="h-20 flex items-center justify-between px-6 bg-white shadow-md dark:bg-gray-800">
           <button className="md:hidden" onClick={() => setIsSidebarOpen(true)}>
-            <Menu className="w-6 h-6 text-gray-700" />
+            <Menu className="w-6 h-6 text-gray-700 dark:text-gray-200" />
           </button>
-          <div className="text-xl font-semibold text-gray-700">
-            Selamat Datang!
+          <div className="flex items-center space-x-4">
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Selamat Datang!</h2>
+            <ThemeToggle />
           </div>
         </header>
         <main className="flex-grow p-6 overflow-auto">
