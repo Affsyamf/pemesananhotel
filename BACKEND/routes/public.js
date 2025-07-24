@@ -48,15 +48,20 @@ router.get('/my-bookings', isAuthenticated, async (req, res) => {
         const userId = req.user.id;
         const [bookings] = await db.query(
             `SELECT 
-                b.id, b.booking_date, r.name AS room_name, r.price, r.image_url
+                b.id, 
+                b.booking_date, 
+                b.status,
+                r.name AS room_name, 
+                r.price,
+                r.image_url
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
             WHERE b.user_id = ?
-            ORDER BY b.booking_date DESC`,
+            ORDER BY b.created_at DESC`,
             [userId]
         );
         res.json(bookings);
-    } catch (error) { // <-- PERBAIKAN DI SINI
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
@@ -83,6 +88,40 @@ router.get('/booking/:id', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// Endpoint untuk user membatalkan pesanannya (YANG HILANG)
+router.put('/bookings/:bookingId/cancel', isAuthenticated, async (req, res) => {
+    const { bookingId } = req.params;
+    const userId = req.user.id;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+        const [bookings] = await connection.query(
+            'SELECT * FROM bookings WHERE id = ? AND user_id = ? FOR UPDATE',
+            [bookingId, userId]
+        );
+        if (bookings.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau Anda tidak berhak.' });
+        }
+        const booking = bookings[0];
+        if (booking.status === 'cancelled') {
+            await connection.rollback();
+            return res.status(400).json({ message: 'Pesanan ini sudah dibatalkan.' });
+        }
+        await connection.query('UPDATE bookings SET status = "cancelled" WHERE id = ?', [bookingId]);
+        await connection.query('UPDATE rooms SET quantity = quantity + 1 WHERE id = ?', [booking.room_id]);
+        await connection.commit();
+        res.json({ message: 'Pesanan berhasil dibatalkan.' });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Server error saat membatalkan pesanan.' });
+    } finally {
+        connection.release();
     }
 });
 
