@@ -1,16 +1,75 @@
 // frontend/src/components/UserLayout.jsx
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import UserNavbar from './UserNavbar';
+import React, { useState } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Hotel, ListChecks, LogOut, Menu } from 'lucide-react';
+
+// Komponen helper untuk link di sidebar
+const SidebarLink = ({ to, icon, children, onClick }) => (
+  <NavLink
+    to={to}
+    onClick={onClick}
+    className={({ isActive }) =>
+      `flex items-center px-4 py-2 mt-2 text-gray-600 transition-colors duration-300 transform rounded-md hover:bg-gray-200 ${
+        isActive ? 'bg-blue-100 text-blue-700' : ''
+      }`
+    }
+  >
+    {icon}
+    <span className="mx-4 font-medium">{children}</span>
+  </NavLink>
+);
 
 function UserLayout() {
+  const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <UserNavbar />
-      <main>
-        {/* Halaman (Pesan Kamar / Pesanan Saya) akan dirender di sini */}
-        <Outlet /> 
-      </main>
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-30 w-64 px-4 py-4 overflow-y-auto transition duration-300 transform bg-white shadow-lg md:relative md:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0 ease-out' : '-translate-x-full ease-in'
+        }`}>
+        <div className="flex items-center justify-center h-20">
+          <h1 className="text-2xl font-bold text-blue-600">User Dashboard</h1>
+        </div>
+
+        <nav className="mt-10">
+          <SidebarLink to="/dashboard/book" icon={<Hotel className="w-5 h-5" />} onClick={() => setIsSidebarOpen(false)}>
+            Pesan Kamar
+          </SidebarLink>
+          <SidebarLink to="/dashboard/my-bookings" icon={<ListChecks className="w-5 h-5" />} onClick={() => setIsSidebarOpen(false)}>
+            Pesanan Saya
+          </SidebarLink>
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-2 mt-5 text-gray-600 transition-colors duration-300 transform rounded-md hover:bg-red-100"
+          >
+            <LogOut className="w-5 h-5 text-red-500" />
+            <span className="mx-4 font-medium">Logout</span>
+          </button>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-grow">
+        <header className="h-20 flex items-center justify-between md:justify-end px-6 bg-white shadow-md">
+          {/* Tombol Hamburger, hanya muncul di layar kecil */}
+          <button className="md:hidden" onClick={() => setIsSidebarOpen(true)}>
+            <Menu className="w-6 h-6 text-gray-700" />
+          </button>
+          <div className="text-xl font-semibold text-gray-700">
+            Selamat Datang!
+          </div>
+        </header>
+        <main className="flex-grow p-6 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
