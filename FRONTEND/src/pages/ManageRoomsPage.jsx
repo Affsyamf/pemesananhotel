@@ -115,7 +115,7 @@ function ManageRoomsPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Manajemen Kamar</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Manajemen Kamar</h1>
         <button onClick={() => handleOpenModal(null)} className="btn-primary flex items-center">
           <Plus size={20} className="mr-2" />
           Tambah Kamar
@@ -133,7 +133,7 @@ function ManageRoomsPage() {
         <p>Loading...</p>
       ) : (
         <>
-          <p className="mb-6 text-gray-600">Menampilkan {filteredRooms.length} dari {allRooms.length} kamar.</p>
+          <p className="mb-6 text-gray-600 dark:text-gray-200">Menampilkan {filteredRooms.length} dari {allRooms.length} kamar.</p>
           {filteredRooms.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* Gunakan `filteredRooms` untuk me-render kartu */}

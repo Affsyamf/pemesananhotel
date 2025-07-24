@@ -17,11 +17,11 @@ function RoomCard({ room, onEdit, onDelete }) {
         alt={room.name}
         className="w-full h-48 object-cover"
       />
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-xl font-bold text-gray-800">{room.name}</h3>
-        <p className="text-sm text-gray-500 mb-2">{room.type}</p>
+      <div className="p-4 flex flex-col flex-grow dark:bg-gray-800">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">{room.name}</h3>
+        <p className="text-sm text-gray-500 mb-2 dark:text-gray-200">{room.type}</p>
         
-        <div className="mt-2 space-y-2 text-sm text-gray-600 flex-grow">
+        <div className="mt-2 space-y-2 text-sm text-gray-600 flex-grow dark:text-gray-200">
           <div className="flex items-center">
             <DollarSign size={16} className="mr-2 text-green-500" />
             <span>{formattedPrice} / malam</span>

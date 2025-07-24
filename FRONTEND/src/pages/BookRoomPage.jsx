@@ -104,7 +104,7 @@ function BookRoomPage() {
 
   return (
     <div className="container mx-auto p-6 md:p-10">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">Pilih Kamar Impian Anda</h1>
+      <h1 className="text-4xl font-bold text-gray-800 mb-8 dark:text-gray-200">Pilih Kamar Impian Anda</h1>
       
       {/* Tampilkan komponen filter di sini */}
       <RoomFilter 
@@ -118,7 +118,7 @@ function BookRoomPage() {
         <p>Memuat kamar...</p>
       ) : (
         <>
-          <p className="mb-6 text-gray-600">Menampilkan {filteredRooms.length} dari {allRooms.length} kamar.</p>
+          <p className="mb-6 text-gray-600 dark:text-gray-200">Menampilkan {filteredRooms.length} dari {allRooms.length} kamar.</p>
           {filteredRooms.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredRooms.map(room => (

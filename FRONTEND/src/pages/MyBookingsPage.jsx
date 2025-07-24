@@ -45,8 +45,8 @@ function MyBookingsPage() {
   };
 
   return (
-    <div className="container dark:bg-gray-800 mx-auto p-6 md:p-10">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">Riwayat Pesanan Saya</h1>
+    <div className="container dark:bg-gray-900 mx-auto p-6 md:p-10">
+      <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-8">Riwayat Pesanan Saya</h1>
         
       {loading ? <p>Memuat riwayat pesanan...</p> : bookings.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-lg shadow-md">
@@ -55,25 +55,25 @@ function MyBookingsPage() {
             <Link to="/dashboard/book" className="btn-primary mt-6">Lihat Kamar</Link>
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-700">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y dark:divide-gray-700 divide-gray-200">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700 dark:text-gray-200">
                         <tr>
-                            <th className="th-style">ID Pesanan</th>
-                            <th className="th-style">Nama Kamar</th>
-                            <th className="th-style">Tanggal Booking</th>
-                            <th className="th-style">Status</th>
-                            <th className="th-style">Aksi</th>
+                            <th className="th-style dark:text-gray-200">ID Pesanan</th>
+                            <th className="th-style dark:text-gray-200">Nama Kamar</th>
+                            <th className="th-style dark:text-gray-200">Tanggal Booking</th>
+                            <th className="th-style dark:text-gray-200">Status</th>
+                            <th className="th-style dark:text-gray-200">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    <tbody className="bg-white divide-y divide-gray-200 dark:text-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                         {bookings.map(booking => (
                             <tr key={booking.id}>
-                                <td className="td-style font-mono">#{booking.id}</td>
-                                <td className="td-style font-semibold text-gray-800">{booking.room_name}</td>
-                                <td className="td-style">{new Date(booking.booking_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                                <td className="td-style">
+                                <td className="td-style font-mono dark:text-gray-200">#{booking.id}</td>
+                                <td className="td-style font-semibold text-gray-800 dark:text-gray-200">{booking.room_name}</td>
+                                <td className="td-style dark:text-gray-200">{new Date(booking.booking_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                                <td className="td-style dark:text-gray-200">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {booking.status}
                                     </span>

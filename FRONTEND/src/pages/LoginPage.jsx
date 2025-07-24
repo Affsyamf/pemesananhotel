@@ -44,14 +44,14 @@ function LoginPage() {
 
   return (
     <AuthLayout title="Login ke Akun Anda">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 dar">
         <div>
-          <label className="text-sm font-bold text-gray-600 block">Email</label>
-          <input name="email" type="email" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1" required />
+          <label className="text-sm font-bold text-gray-900 block">Email</label>
+          <input name="email" type="email" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1 dark:text-gray-900" required />
         </div>
         <div>
           <label className="text-sm font-bold text-gray-600 block">Password</label>
-          <input name="password" type="password" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1" required />
+          <input name="password" type="password" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1 dark:text-gray-900" required />
         </div>
         <div className="text-right">
           <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">Lupa Password?</Link>
@@ -60,11 +60,11 @@ function LoginPage() {
           <button type="submit" className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold">Login</button>
         </div>
       </form>
-      <p className="text-sm text-center mt-4">
+      <p className="text-sm text-center mt-4 dark:text-gray-900">
         Belum punya akun?{' '}
         <Link to="/register" className="text-blue-600 hover:underline">Daftar di sini</Link>
       </p>
-      <p className="text-sm text-center mt-4">
+      <p className="text-sm text-center mt-4 dark:text-gray-900">
         Kembali ke halaman utama{' '}
         <Link to="/" className="text-blue-600 hover:underline">KLIK</Link>
       </p>

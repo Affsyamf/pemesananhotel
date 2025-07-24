@@ -25,17 +25,17 @@ function RoomFormModal({ isOpen, onClose, onSubmit, initialData }) {
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">{isEditMode ? 'Edit Kamar' : 'Tambah Kamar Baru'}</Dialog.Title>
+              <Dialog.Panel className="w-full dark:bg-gray-800 max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:bg-gray-800 dark:text-gray-200">{isEditMode ? 'Edit Kamar' : 'Tambah Kamar Baru'}</Dialog.Title>
                 
-                <form onSubmit={handleSubmit(onSubmit)} className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">Nama Kamar</label><input {...register('name', { required: true })} className="mt-1 w-full input-style" /></div>
-                  <div><label className="block text-sm font-medium text-gray-700">Tipe</label><input {...register('type', { required: true })} className="mt-1 w-full input-style" placeholder="e.g. Deluxe, Suite" /></div>
-                  <div><label className="block text-sm font-medium text-gray-700">Harga per Malam</label><input {...register('price', { required: true, valueAsNumber: true })} type="number" className="mt-1 w-full input-style" /></div>
-                  <div><label className="block text-sm font-medium text-gray-700">Jumlah Tersedia</label><input {...register('quantity', { required: true, valueAsNumber: true })} type="number" className="mt-1 w-full input-style" /></div>
-                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">Image URL</label><input {...register('image_url')} className="mt-1 w-full input-style" placeholder="https://..." /><p className="text-xs text-gray-500">Untuk saat ini, masukkan link gambar dari internet.</p></div>
-                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">Fasilitas</label><input {...register('facilities')} className="mt-1 w-full input-style" placeholder="Pisahkan dengan koma, e.g. WiFi, AC, TV" /></div>
-                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">Deskripsi</label><textarea {...register('description')} rows="3" className="mt-1 w-full input-style"></textarea></div>
+                <form onSubmit={handleSubmit(onSubmit)} className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 dark:text-gray-300 dark:bg-gray-800">
+                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 dark:text-gray-200 ">Nama Kamar</label><input {...register('name', { required: true })} className="mt-1 w-full input-style dark:bg-gray-800" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Tipe</label><input {...register('type', { required: true })} className="mt-1 w-full input-style dark:bg-gray-800" placeholder="e.g. Deluxe, Suite" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Harga per Malam</label><input {...register('price', { required: true, valueAsNumber: true })} type="number" className="mt-1 w-full input-style dark:bg-gray-800" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Jumlah Tersedia</label><input {...register('quantity', { required: true, valueAsNumber: true })} type="number" className="mt-1 w-full input-style dark:bg-gray-800" /></div>
+                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Image URL</label><input {...register('image_url')} className="mt-1 w-full input-style dark:bg-gray-800" placeholder="https://..." /><p className="text-xs text-gray-500 dark:text-gray-200 dark:bg-gray-800">Untuk saat ini, masukkan link gambar dari internet.</p></div>
+                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Fasilitas</label><input {...register('facilities')} className="mt-1 w-full input-style dark:bg-gray-800" placeholder="Pisahkan dengan koma, e.g. WiFi, AC, TV" /></div>
+                  <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Deskripsi</label><textarea {...register('description')} rows="3" className="mt-1 w-full input-style dark:bg-gray-800"></textarea></div>
 
                   <div className="md:col-span-2 mt-4 flex justify-end space-x-2">
                     <button type="button" onClick={onClose} className="btn-secondary">Batal</button>
