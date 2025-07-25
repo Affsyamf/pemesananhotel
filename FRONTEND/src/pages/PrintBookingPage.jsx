@@ -1,12 +1,13 @@
 // frontend/src/pages/PrintBookingPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Printer } from 'lucide-react';
+import { Printer, ArrowLeft } from 'lucide-react';
 
 function PrintBookingPage() {
     const { bookingId } = useParams();
+    const navigate = useNavigate();
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -97,10 +98,16 @@ function PrintBookingPage() {
                 </div>
             </div>
 
-            <button onClick={() => window.print()} className="btn-primary mt-8 flex items-center print:hidden">
-                <Printer size={18} className="mr-2" />
-                Cetak Bukti Pesanan
-            </button>
+            <div className="mt-8 flex items-center space-x-4 print:hidden">
+                <button onClick={() => navigate(-1)} className="btn-secondary flex items-center">
+                    <ArrowLeft size={18} className="mr-2" />
+                    Kembali
+                </button>
+                <button onClick={() => window.print()} className="btn-primary flex items-center">
+                    <Printer size={18} className="mr-2" />
+                    Cetak Bukti Pesanan
+                </button>
+            </div>
         </div>
     );
 }

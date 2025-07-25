@@ -28,32 +28,32 @@ function UserFormModal({ isOpen, onClose, onSubmit, initialData }) {
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+              <Dialog.Panel className="w-full dark:bg-gray-900 max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
                   {isEditMode ? 'Edit User' : 'Tambah User Baru'}
                 </Dialog.Title>
                 
-                <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4 dark:bg-gray-900 dark:text-gray-900">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Username</label>
-                    <input {...register('username', { required: 'Username wajib diisi' })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+                    <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-100 ">Username</label>
+                    <input {...register('username', { required: 'Username wajib diisi' })} className="mt-1 block w-full dark:bg-gray-900 dark:text-gray-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
                     {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <input {...register('email', { required: 'Email wajib diisi' })} type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+                    <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-100">Email</label>
+                    <input {...register('email', { required: 'Email wajib diisi' })} type="email" className="mt-1 block w-full rounded-md dark:bg-gray-900 dark:text-gray-100 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                   </div>
                    {!isEditMode && ( // Hanya tampilkan field password saat mode Tambah User
                      <div>
-                       <label className="block text-sm font-medium text-gray-700">Password</label>
-                       <input {...register('password', { required: 'Password wajib diisi' })} type="password" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+                       <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-100">Password</label>
+                       <input {...register('password', { required: 'Password wajib diisi' })} type="password" className="mt-1 block w-full dark:bg-gray-900 dark:text-gray-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
                         {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                      </div>
                    )}
                   <div>
-                     <label className="block text-sm font-medium text-gray-700">Role</label>
-                     <select {...register('role')} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                     <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-100">Role</label>
+                     <select {...register('role')} className="mt-1 block w-full dark:bg-gray-900 dark:text-gray-100 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                      </select>
