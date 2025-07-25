@@ -44,25 +44,25 @@ function PrintBookingPage() {
                 <div className="flex justify-between items-start border-b pb-4 mb-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800">Hotel Mewah</h1>
-                        <p className="text-gray-500">Bukti Pemesanan</p>
+                        <p className="text-gray-500 dark:text-slate-900">Bukti Pemesanan</p>
                     </div>
                     <div className="text-right">
-                        <p className="font-semibold">ID Pesanan:</p>
+                        <p className="font-semibold dark:text-slate-900">ID Pesanan:</p>
                         <p className="font-mono text-gray-700">#{booking.id}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-8 gap-y-6 my-8">
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase">Dipesan Oleh</h3>
-                        <p className="text-lg text-gray-800">{booking.guest_name}</p>
-                        <p className="text-gray-600">{booking.email}</p>
-                        <p className="text-gray-600">{booking.guest_address}</p>
+                        <h3 className="text-sm font-semibold text-gray-500 dark:text-slate-900 uppercase">Dipesan Oleh</h3>
+                        <p className="text-lg text-gray-800 dark:text-slate-900 font-bold">{booking.guest_name}</p>
+                        <p className="text-gray-600 dark:text-slate-900">{booking.email}</p>
+                        <p className="text-gray-600 dark:text-slate-900">{booking.guest_address}</p>
                     </div>
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase">Detail Pesanan</h3>
-                        <p className="text-lg text-gray-800">{new Date(booking.booking_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        <p className="text-gray-600">Tanggal Pembuatan: {new Date(booking.created_at).toLocaleString('id-ID')}</p>
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase dark:text-slate-900">Detail Pesanan</h3>
+                        <p className="text-lg text-gray-800 dark:text-slate-900 font-bold">{new Date(booking.booking_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p className="text-gray-600 dark:text-slate-900">Tanggal Pembuatan: {new Date(booking.created_at).toLocaleString('id-ID')}</p>
                     </div>
                 </div>
 
@@ -70,29 +70,29 @@ function PrintBookingPage() {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="p-3 text-sm font-semibold">Deskripsi</th>
-                                <th className="p-3 text-sm font-semibold text-right">Harga</th>
+                                <th className="p-3 text-sm font-semibold dark:text-slate-900">Deskripsi</th>
+                                <th className="p-3 text-sm font-semibold text-right dark:text-slate-900">Harga</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr className="border-b">
                                 <td className="p-3">
                                     <p className="font-bold text-gray-800">{booking.room_name}</p>
-                                    <p className="text-gray-600 text-sm">{booking.room_type}</p>
+                                    <p className="text-gray-600 text-sm dark:text-slate-900">{booking.room_type}</p>
                                 </td>
-                                <td className="p-3 text-right">{formattedPrice}</td>
+                                <td className="p-3 text-right dark:text-slate-900 font-bold">{formattedPrice}</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td className="p-3 font-bold text-right">Total</td>
-                                <td className="p-3 font-bold text-right text-xl">{formattedPrice}</td>
+                                <td className="p-3 font-bold text-right dark:text-slate-900">Total</td>
+                                <td className="p-3 font-bold text-right text-xl dark:text-slate-900">{formattedPrice}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
 
-                <div className="mt-12 text-center text-xs text-gray-500">
+                <div className="mt-12 text-center text-xs text-gray-500 dark:text-slate-900 font-bold">
                     <p>Terima kasih telah memilih Hotel Mewah. Harap tunjukkan bukti ini saat check-in.</p>
                 </div>
             </div>
