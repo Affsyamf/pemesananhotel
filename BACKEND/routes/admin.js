@@ -92,5 +92,62 @@ router.delete('/rooms/:id', async (req, res) => {
     }
 });
 
+// === CRUD BOOKINGS ===
+// GET all bookings
+router.get('/bookings', async (req, res) => {
+    try {
+        // Query dengan JOIN untuk mendapatkan info user dan kamar
+        const [bookings] = await db.query(`
+            SELECT 
+                b.id, b.guest_name, b.booking_date, b.status,
+                u.username AS user_username,
+                r.name AS room_name
+            FROM bookings b
+            JOIN users u ON b.user_id = u.id
+            JOIN rooms r ON b.room_id = r.id
+            ORDER BY b.created_at DESC
+        `);
+        res.json(bookings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// DELETE a booking
+// PENTING: Saat admin menghapus booking, stok kamar harus dikembalikan jika statusnya 'confirmed'
+router.delete('/bookings/:id', async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Cek booking yang akan dihapus
+        const [bookings] = await connection.query('SELECT * FROM bookings WHERE id = ?', [id]);
+        if (bookings.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Booking tidak ditemukan' });
+        }
+        const booking = bookings[0];
+
+        // Jika statusnya confirmed, kembalikan stok kamar
+        if (booking.status === 'confirmed') {
+            await connection.query('UPDATE rooms SET quantity = quantity + 1 WHERE id = ?', [booking.room_id]);
+        }
+
+        // Hapus booking
+        await connection.query('DELETE FROM bookings WHERE id = ?', [id]);
+
+        await connection.commit();
+        res.json({ message: 'Booking berhasil dihapus' });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Server error saat menghapus booking' });
+    } finally {
+        connection.release();
+    }
+});
+
 
 module.exports = router;

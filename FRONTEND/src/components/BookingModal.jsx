@@ -20,12 +20,12 @@ function BookingModal({ isOpen, onClose, onSubmit, room }) {
               <Dialog.Panel className="w-full dark:bg-gray-800 max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title as="h3" className="text-xl dark:text-white font-bold leading-6 text-gray-900">Form Pemesanan: {room.name}</Dialog.Title>
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
-                  <div><label className="block dark:text-gray-300 text-sm font-medium">Nama Lengkap</label><input {...register('guest_name', { required: true })} className="input-style" /></div>
-                  <div><label className="block dark:text-gray-300 text-sm font-medium">Alamat</label><textarea {...register('guest_address', { required: true })} className="input-style" /></div>
+                  <div><label className="block dark:text-gray-300 text-sm font-medium">Nama Lengkap</label><input {...register('guest_name', { required: true })} className="input-style dark:bg-gray-900 dark:text-gray-100" /></div>
+                  <div><label className="block dark:text-gray-300 text-sm font-medium">Alamat</label><textarea {...register('guest_address', { required: true })} className="input-style dark:bg-gray-900 dark:text-gray-100" /></div>
                   <div>
                     <label className="block dark:text-gray-300 text-sm font-medium">Tanggal Booking</label>
                     <Controller control={control} name="booking_date" required render={({ field }) => (
-                        <DatePicker placeholderText="Pilih tanggal" onChange={(date) => field.onChange(date)} selected={field.value} className="input-style w-full" minDate={new Date()} dateFormat="yyyy-MM-dd" />
+                        <DatePicker placeholderText="Pilih tanggal" onChange={(date) => field.onChange(date)} selected={field.value} className="input-style w-full dark:bg-gray-900 dark:text-gray-100" minDate={new Date()} dateFormat="yyyy-MM-dd" />
                     )} />
                   </div>
                   <div className="mt-6 flex justify-end space-x-2"><button type="button" onClick={onClose} className="btn-secondary">Batal</button><button type="submit" className="btn-primary">Konfirmasi Pesanan</button></div>

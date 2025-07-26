@@ -49,9 +49,9 @@ function MyBookingsPage() {
       <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-8">Riwayat Pesanan Saya</h1>
         
       {loading ? <p>Memuat riwayat pesanan...</p> : bookings.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-lg shadow-md">
-            <h3 className="text-2xl font-semibold text-gray-700">Anda belum memiliki pesanan.</h3>
-            <p className="text-gray-500 mt-2">Mari jelajahi dan pesan kamar impian Anda!</p>
+        <div className="text-center py-20 bg-white rounded-lg shadow-md  dark:bg-gray-900 dark:text-gray-100">
+            <h3 className="text-2xl font-semibold text-gray-700 dark:bg-gray-900 dark:text-gray-100">Anda belum memiliki pesanan.</h3>
+            <p className="text-gray-500 mt-2  dark:bg-gray-900 dark:text-gray-100">Mari jelajahi dan pesan kamar impian Anda!</p>
             <Link to="/dashboard/book" className="btn-primary mt-6">Lihat Kamar</Link>
         </div>
       ) : (

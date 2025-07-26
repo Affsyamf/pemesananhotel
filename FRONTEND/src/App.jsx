@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import ManageBookingsPage from './pages/ManageBookingsPage';
 
 // Halaman Publik
 import DashboardPage from './pages/DashboardPage';
@@ -49,6 +50,7 @@ function App() {
             <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<ManageUsersPage />} />
             <Route path="rooms" element={<ManageRoomsPage />} />
+            <Route path="bookings" element={<ManageBookingsPage />} />
           </Route>
         </Route>
       </Routes>
