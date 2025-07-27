@@ -1,7 +1,8 @@
 // frontend/src/components/admin/BookingsTable.jsx
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
-import { Trash2 } from 'lucide-react'; // Hanya import ikon yang digunakan
+import { Pencil, Trash2, Printer } from 'lucide-react'; // Hanya import ikon yang digunakan
 
 function BookingsTable({ data, onDelete }) {
   const columns = useMemo(() => [
@@ -27,10 +28,15 @@ function BookingsTable({ data, onDelete }) {
       id: 'actions',
       header: 'Aksi',
       cell: ({ row }) => (
-        // Tombol Edit sudah dihapus dari sini
-        <button onClick={() => onDelete(row.original)} className="p-1 text-red-600 hover:text-red-800">
-          <Trash2 size={18} />
-        </button>
+        <div className="flex items-center space-x-2">
+          {/* Link untuk mencetak pesanan satuan */}
+          <Link to={`/admin/print-booking/${row.original.id}`} className="p-1 text-gray-500 hover:text-gray-800">
+            <Printer size={18} />
+          </Link>
+          <button onClick={() => onDelete(row.original)} className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500">
+            <Trash2 size={18} />
+          </button>
+        </div>
       ),
     },
   ], [onDelete]);

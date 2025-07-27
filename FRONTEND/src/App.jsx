@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import ManageBookingsPage from './pages/ManageBookingsPage';
 
+// Halaman Admin
+import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
 // Halaman Publik
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
@@ -37,6 +39,11 @@ function App() {
             <Route path="book" element={<BookRoomPage />} />
             <Route path="my-bookings" element={<MyBookingsPage />} />
           </Route>
+        </Route>
+
+         {/* Rute Cetak terpisah untuk Admin */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route path="/admin/print-booking/:bookingId" element={<AdminPrintBookingPage />} />
         </Route>
         
         {/* Rute Cetak terpisah agar tidak ada navbar */}

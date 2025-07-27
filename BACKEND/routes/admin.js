@@ -149,5 +149,28 @@ router.delete('/bookings/:id', async (req, res) => {
     }
 });
 
+// Endpoint untuk admin mengambil detail satu pesanan
+router.get('/booking/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [details] = await db.query(
+            `SELECT 
+                b.*, r.name AS room_name, r.type AS room_type, r.price, u.username, u.email
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN users u ON b.user_id = u.id
+            WHERE b.id = ?`,
+            [id]
+        );
+        if (details.length === 0) {
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
+        }
+        res.json(details[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 
 module.exports = router;
