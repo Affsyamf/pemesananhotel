@@ -1,7 +1,7 @@
 // frontend/src/components/admin/BookingsTable.jsx
 import React, { useMemo } from 'react';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
-import { Trash2 } from 'lucide-react'; // Hapus 'Pencil' dari import ini
+import { Trash2 } from 'lucide-react'; // Hanya import ikon yang digunakan
 
 function BookingsTable({ data, onDelete }) {
   const columns = useMemo(() => [
@@ -25,10 +25,10 @@ function BookingsTable({ data, onDelete }) {
     },
     {
       id: 'actions',
-      header: 'Aksi', // Ganti header menjadi 'Aksi'
+      header: 'Aksi',
       cell: ({ row }) => (
         // Tombol Edit sudah dihapus dari sini
-        <button onClick={() => onDelete(row.original.id)} className="p-1 text-red-600 hover:text-red-800">
+        <button onClick={() => onDelete(row.original)} className="p-1 text-red-600 hover:text-red-800">
           <Trash2 size={18} />
         </button>
       ),

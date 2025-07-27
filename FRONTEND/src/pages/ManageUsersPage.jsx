@@ -1,16 +1,22 @@
-// frontend/src/pages/ManageUsersPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
 import UsersTable from '../components/admin/UsersTable';
-import UserFormModal from '../components/admin/UserFormModal'; // <-- Import modal
+import UserFormModal from '../components/admin/UserFormModal';
+import ConfirmationModal from '../components/admin/ConfirmationModal';
 
 function ManageUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState(null); // <-- State untuk data user yg diedit
+  
+  // State untuk modal form (Tambah/Edit)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+
+  // State untuk modal konfirmasi hapus
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -21,7 +27,7 @@ function ManageUsersPage() {
       });
       setUsers(response.data);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Gagal mengambil data user');
+      toast.error(error?.response?.data?.message||'Gagal mengambil data user');
     } finally {
       setLoading(false);
     }
@@ -31,70 +37,92 @@ function ManageUsersPage() {
     fetchUsers();
   }, [fetchUsers]);
   
-  // Fungsi untuk membuka modal
-  const handleOpenModal = (user = null) => {
-    setEditingUser(user); // Jika 'user' ada, kita mode edit. Jika null, mode tambah.
-    setIsModalOpen(true);
+  // Fungsi untuk modal form
+  const handleOpenFormModal = (user = null) => {
+    setEditingUser(user);
+    setIsFormModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseFormModal = () => {
+    setIsFormModalOpen(false);
     setEditingUser(null);
   };
-
-  // Fungsi untuk mengirim data dari form
+  
   const handleFormSubmit = async (data) => {
     const toastId = toast.loading('Menyimpan data...');
     const token = localStorage.getItem('token');
     try {
         if (editingUser) {
-            // Mode Edit (PUT)
             await axios.put(`http://localhost:5001/api/admin/users/${editingUser.id}`, data, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('User berhasil diperbarui', { id: toastId });
         } else {
-            // Mode Tambah (POST)
-            // Diarahkan ke /register agar password di-hash. 
-            // Atau Anda bisa buat endpoint /admin/users baru untuk create user dengan hashing.
-            // Untuk sekarang kita gunakan endpoint register
             await axios.post('http://localhost:5001/api/auth/register', data);
             toast.success('User baru berhasil ditambahkan', { id: toastId });
         }
-        fetchUsers(); // Refresh data tabel
-        handleCloseModal(); // Tutup modal
+        fetchUsers();
+        handleCloseFormModal();
     } catch (error) {
         toast.error(error.response?.data?.message || 'Gagal menyimpan data', { id: toastId });
     }
   };
 
+  // Fungsi untuk modal hapus
+  const openDeleteModal = (user) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setUserToDelete(null);
+    setIsDeleteModalOpen(false);
+  };
+  
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5001/api/admin/users/${userToDelete.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('User berhasil dihapus');
+      fetchUsers();
+      closeDeleteModal();
+    } catch (error) {
+      toast.error(error?.response?.data?.message||'Gagal menghapus user');
+    }
+  };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold dark:text-gray-200 text-gray-800">Manajemen Users</h1>
-        {/* Tombol ini sekarang membuka modal untuk tambah user baru */}
-        <button onClick={() => handleOpenModal(null)} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Manajemen Users</h1>
+        <button onClick={() => handleOpenFormModal(null)} className="btn-primary flex items-center">
           <Plus size={20} className="mr-2" />
           Tambah User
         </button>
       </div>
       
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-           {/* Kirim fungsi handleOpenModal ke tabel untuk tombol edit */}
-           <UsersTable data={users} refetch={fetchUsers} onEdit={handleOpenModal} />
+      {loading ? <p>Loading...</p> : (
+        <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
+           <UsersTable data={users} onEdit={handleOpenFormModal} onDelete={openDeleteModal} />
         </div>
       )}
 
-      {/* Render komponen modal */}
       <UserFormModal 
-        isOpen={isModalOpen} 
-        onClose={handleCloseModal}
+        isOpen={isFormModalOpen} 
+        onClose={handleCloseFormModal}
         onSubmit={handleFormSubmit}
         initialData={editingUser}
+      />
+      
+      <ConfirmationModal 
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        title="Hapus User"
+        message={`Apakah Anda yakin ingin menghapus user "${userToDelete?.username}"? Aksi ini tidak dapat dibatalkan.`}
       />
     </div>
   );
