@@ -1,9 +1,7 @@
-// frontend/src/components/RoomTypes.jsx
 import React from 'react';
+import { DollarSign } from 'lucide-react'; // Import ikon
 
-// Terima 'rooms' dan 'loading' sebagai props
 function RoomTypes({ rooms, loading }) {
-  // Data statis 'const rooms = [...]' sudah dihapus
 
   return (
     <section id="rooms" className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -25,21 +23,39 @@ function RoomTypes({ rooms, loading }) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Gunakan data dari props untuk me-render kartu */}
-            {rooms.map((room) => (
-              <div key={room.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
-                <div className="overflow-hidden">
-                  {/* Ganti dari room.img menjadi room.image_url */}
-                  <img src={room.image_url || 'https://via.placeholder.com/400x250'} alt={room.name} className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" />
+            {rooms.map((room) => {
+              // Format harga menjadi format Rupiah
+              const formattedPrice = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+              }).format(room.price);
+
+              return (
+                <div key={room.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 group">
+                  <div className="overflow-hidden">
+                    <img src={room.image_url || 'https://via.placeholder.com/400x250'} alt={room.name} className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                  <div className="p-6 flex flex-col">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{room.name}</h3>
+                    
+                    {/* --- KODE BARU UNTUK TIPE KAMAR --- */}
+                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-3">{room.type}</p>
+
+                    {/* --- KODE BARU UNTUK HARGA --- */}
+                    <div className="flex items-center text-lg font-semibold text-green-600 dark:text-green-400 mb-3">
+                        <DollarSign size={20} className="mr-2"/>
+                        <span>{formattedPrice} / malam</span>
+                    </div>
+                    
+                    <p className="text-gray-600 dark:text-gray-300 text-sm flex-grow min-h-[60px]">{room.description}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                        <span className="font-semibold">Fasilitas:</span> {room.facilities}
+                    </p>
+                  </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">{room.name}</h3>
-                  {/* Tampilkan deskripsi dan fasilitas dari data dinamis */}
-                  <p className="text-gray-600 dark:text-gray-300 text-sm h-16">{room.description}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">Fasilitas: {room.facilities}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
