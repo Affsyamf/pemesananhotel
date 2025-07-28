@@ -16,8 +16,7 @@ function ManageBookingsPage() {
   const reportRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => reportRef.current,
-    documentTitle: 'Laporan-Pemesanan-Hotel-Mewah',
-    onAfterPrint: () => toast.success('Laporan berhasil dibuat'),
+    documentTitle: 'Laporan-Pemesanan-Hotel',
   });
 
   const fetchBookings = useCallback(async () => {
@@ -29,7 +28,7 @@ function ManageBookingsPage() {
       });
       setBookings(response.data);
     } catch (error) {
-      toast.error('Gagal mengambil data pesanan');
+      toast.error(error.response?.data?.message||'Gagal mengambil data pesanan');
     } finally {
       setLoading(false);
     }
@@ -66,25 +65,23 @@ function ManageBookingsPage() {
 
   return (
     <div>
-      <div className="main-content">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Riwayat Semua Pesanan</h1>
-          <button onClick={handlePrint} className="btn-secondary flex items-center">
-            <Printer size={18} className="mr-2" />
-            Cetak Laporan
-          </button>
-        </div>
-        
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
-            <BookingsTable data={bookings} onDelete={openDeleteModal} />
-          </div>
-        )}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Riwayat Semua Pesanan</h1>
+        <button onClick={handlePrint} className="btn-secondary flex items-center">
+          <Printer size={18} className="mr-2" />
+          Cetak Laporan
+        </button>
       </div>
-
-      <div className="printable-content">
+      
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-800">
+          <BookingsTable data={bookings} onDelete={openDeleteModal} />
+        </div>
+      )}
+      
+      <div style={{ display: 'none' }}>
         <AllBookingsReport ref={reportRef} bookings={bookings} />
       </div>
 

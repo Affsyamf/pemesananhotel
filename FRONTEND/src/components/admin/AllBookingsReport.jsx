@@ -1,9 +1,7 @@
 import React from 'react';
 
-// 1. Gunakan React.forwardRef untuk "meneruskan" ref dari induk
 const AllBookingsReport = React.forwardRef(({ bookings }, ref) => {
   return (
-    // 2. Pasang ref yang diterima ke elemen div paling luar
     <div ref={ref} className="p-8">
       <h1 className="text-2xl font-bold mb-4 text-center">Laporan Riwayat Pesanan</h1>
       <p className="text-center text-sm text-gray-500 mb-6">

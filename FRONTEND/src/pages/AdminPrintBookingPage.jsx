@@ -47,7 +47,7 @@ function AdminPrintBookingPage() {
                         <p className="text-gray-500">Bukti Pemesanan (Admin Copy)</p>
                     </div>
                     <div className="text-right">
-                        <p className="font-semibold">ID Pesanan:</p>
+                        <p className="font-semibold dark:text-slate-900">ID Pesanan:</p>
                         <p className="font-mono text-gray-700">#{booking.id}</p>
                     </div>
                 </div>
@@ -70,8 +70,8 @@ function AdminPrintBookingPage() {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="p-3 text-sm font-semibold">Deskripsi</th>
-                                <th className="p-3 text-sm font-semibold text-right">Harga</th>
+                                <th className="p-3 text-sm font-semibold dark:text-slate-900">Deskripsi</th>
+                                <th className="p-3 text-sm font-semibold text-right dark:text-slate-900">Harga</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,19 +80,19 @@ function AdminPrintBookingPage() {
                                     <p className="font-bold text-gray-800">{booking.room_name}</p>
                                     <p className="text-gray-600 text-sm">{booking.room_type}</p>
                                 </td>
-                                <td className="p-3 text-right">{formattedPrice}</td>
+                                <td className="p-3 text-right dark:text-slate-900 font-bold">{formattedPrice}</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td className="p-3 font-bold text-right">Total</td>
-                                <td className="p-3 font-bold text-right text-xl">{formattedPrice}</td>
+                                <td className="p-3 text-right dark:text-slate-900 font-bold">Total</td>
+                                <td className="p-3 font-bold text-right text-xl dark:text-slate-900">{formattedPrice}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
 
-                <div className="mt-12 text-center text-xs text-gray-500">
+                <div className="mt-12 text-center text-xs text-gray-500 dark:text-slate-900 font-bold">
                     <p>Terima kasih telah memilih Hotel Mewah. Harap tunjukkan bukti ini saat check-in.</p>
                 </div>
             </div>
