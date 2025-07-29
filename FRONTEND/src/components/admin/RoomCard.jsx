@@ -40,7 +40,7 @@ function RoomCard({ room, onEdit, onDelete }) {
           <button onClick={() => onEdit(room)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full">
             <Pencil size={18} />
           </button>
-          <button onClick={() => onDelete(room.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-full">
+          <button onClick={() => onDelete(room)} className="p-2 text-red-600 hover:bg-red-100 rounded-full">
             <Trash2 size={18} />
           </button>
         </div>

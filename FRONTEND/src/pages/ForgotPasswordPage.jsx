@@ -1,13 +1,11 @@
-// frontend/src/pages/ForgotPasswordPage.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
+import toast from 'react-hot-toast';
 
 function ForgotPasswordPage() {
     const [formData, setFormData] = useState({ email: '', newPassword: '' });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,45 +13,42 @@ function ForgotPasswordPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
+        const toastId = toast.loading('Memproses permintaan...');
         try {
             const response = await axios.post('http://localhost:5001/api/auth/forgot-password', formData);
-            setSuccess(response.data.message);
+            toast.success(response.data.message, { id: toastId });
         } catch (err) {
-            setError(err.response?.data?.message || 'Gagal memperbarui password');
+            toast.error(err.response?.data?.message || 'Gagal memperbarui password', { id: toastId });
         }
     };
 
     return (
         <AuthLayout title="Reset Password Anda">
             <form onSubmit={handleSubmit} className="space-y-6">
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                {success && <p className="text-green-500 text-sm text-center">{success}</p>}
                 <div>
-                    <label className="text-sm font-bold text-gray-600 block">Email Terdaftar</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Terdaftar</label>
                     <input
                         name="email"
                         type="email"
                         onChange={handleChange}
-                        className="w-full p-2 border border-gray-300 rounded-md mt-1"
+                        className="input-style w-full"
                         required
                     />
                 </div>
                 <div>
-                    <label className="text-sm font-bold text-gray-600 block">Password Baru</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password Baru</label>
                     <input
                         name="newPassword"
                         type="password"
                         onChange={handleChange}
-                        className="w-full p-2 border border-gray-300 rounded-md mt-1"
+                        className="input-style w-full"
                         required
                     />
                 </div>
                 <div>
                     <button
                         type="submit"
-                        className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold"
+                        className="btn-primary w-full"
                     >
                         Reset Password
                     </button>

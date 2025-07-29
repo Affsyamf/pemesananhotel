@@ -10,6 +10,7 @@ import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 // Halaman & Komponen Terlindungi
 import ProtectedRoute from './components/ProtectedRoute';
@@ -30,6 +31,7 @@ function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />}/>
 
         {/* --- RUTE USER YANG DIPERBARUI --- */}
         <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['user']} />}>
