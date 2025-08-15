@@ -157,7 +157,7 @@ router.get('/booking/:id', async (req, res) => {
             `SELECT 
                 b.*, r.name AS room_name, r.type AS room_type, r.price, u.username, u.email
             FROM bookings b
-            JOIN rooms r ON b.room_id = r.id
+            JOI`N rooms r ON b.room_id = r.id
             JOIN users u ON b.user_id = u.id
             WHERE b.id = ?`,
             [id]

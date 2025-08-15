@@ -14,6 +14,64 @@ router.get('/rooms', async (req, res) => {
     }
 });
 
+router.get('/rooms/:roomId/reviews', async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const sql = `
+            SELECT r.id, r.rating, r.comment, r.createdAt, u.username
+            FROM reviews AS r
+            JOIN users AS u ON r.userId = u.id
+            WHERE r.roomId = ?
+            ORDER BY r.createdAt DESC
+        `;
+        const [reviews] = await db.query(sql, [roomId]);
+        res.json(reviews);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error saat mengambil ulasan" });
+    }
+});
+
+// Point B: Endpoint untuk user membuat ulasan baru (memerlukan login)
+// POST /api/public/rooms/:roomId/reviews (Contoh URL lengkap)
+router.post('/rooms/:roomId/reviews', isAuthenticated, async (req, res) => {
+    const { roomId } = req.params;
+    const userId = req.user.id; // Diambil dari token setelah melewati isAuthenticated
+    const { rating, comment } = req.body;
+
+    if (!rating || !comment) {
+        return res.status(400).json({ message: "Rating dan komentar tidak boleh kosong" });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Masukkan ulasan baru
+        const insertReviewSql = 'INSERT INTO reviews (roomId, userId, rating, comment) VALUES (?, ?, ?, ?)';
+        await connection.query(insertReviewSql, [roomId, userId, rating, comment]);
+
+        // 2. Update tabel rooms dengan rating baru
+        const updateRoomSql = `
+            UPDATE rooms SET
+                numReviews = (SELECT COUNT(*) FROM reviews WHERE roomId = ?),
+                averageRating = (SELECT AVG(rating) FROM reviews WHERE roomId = ?)
+            WHERE id = ?
+        `;
+        await connection.query(updateRoomSql, [roomId, roomId, roomId]);
+        
+        await connection.commit();
+        res.status(201).json({ message: "Ulasan berhasil ditambahkan" });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Terjadi kesalahan saat menambahkan ulasan' });
+    } finally {
+        connection.release();
+    }
+});
+
 // Endpoint untuk user membuat pemesanan (booking)
 router.post('/bookings', isAuthenticated, async (req, res) => {
     const { room_id, guest_name, guest_address, booking_date } = req.body;
