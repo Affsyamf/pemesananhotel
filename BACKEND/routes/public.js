@@ -86,6 +86,33 @@ router.post('/rooms/:roomId/reviews', isAuthenticated, async (req, res) => {
     }
 });
 
+// Endpoint untuk memeriksa apakah seorang pengguna bisa memberi ulasan untuk kamar tertentu
+router.get('/rooms/:roomId/can-review', isAuthenticated, async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const userId = req.user.id; // Diambil dari token
+
+        // Query untuk menghitung jumlah pesanan yang sudah dikonfirmasi
+        // oleh user ini untuk kamar ini.
+        const sql = `
+            SELECT COUNT(*) AS bookingCount 
+            FROM bookings 
+            WHERE user_id = ? AND room_id = ? AND status = 'confirmed'
+        `;
+
+        const [results] = await db.query(sql, [userId, roomId]);
+
+        // Jika jumlah pesanan lebih dari 0, maka pengguna boleh memberi ulasan.
+        const canReview = results[0].bookingCount > 0;
+
+        res.json({ canReview }); // Kirim hasilnya: { "canReview": true } atau { "canReview": false }
+
+    } catch (error) {
+        console.error("Error saat memeriksa eligibilitas ulasan:", error);
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
 // Endpoint untuk user membuat pemesanan (booking)
 router.post('/bookings', isAuthenticated, async (req, res) => {
     const { room_id, guest_name, guest_address, booking_date } = req.body;

@@ -3,11 +3,11 @@ import StarRating from './StarRating';
 
 const ReviewList = ({ reviews = [] }) => {
   return (
-    <div className="mt-10">
+    <div className="mt-3">
       <h3 className="text-2xl font-bold mb-6">Ulasan Pengguna</h3>
       {reviews.length === 0 ? (
-        <div className="bg-gray-100 p-4 rounded-lg">
-          <p className="text-gray-600">Belum ada ulasan untuk kamar ini. Jadilah yang pertama!</p>
+        <div className="bg-gray-100 p-4 rounded-lg dark:bg-slate-900">
+          <p className="text-gray-100 ">Belum ada ulasan untuk kamar ini. Jadilah yang pertama!</p>
         </div>
       ) : (
         <div className="space-y-6">
