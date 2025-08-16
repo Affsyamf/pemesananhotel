@@ -17,7 +17,7 @@ const ReviewForm = ({ onSubmit, isLoading }) => {
   };
 
   return (
-    <div className="mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-slate-900">
+    <div className="mt-10 p-6 bg-white border-slate-800 rounded-lg shadow-md dark:bg-slate-900">
       <h3 className="text-2xl font-bold mb-4 dark:text-white">Tulis Ulasan Anda</h3>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -25,7 +25,7 @@ const ReviewForm = ({ onSubmit, isLoading }) => {
           <select 
             value={rating} 
             onChange={(e) => setRating(Number(e.target.value))} 
-            className="w-full p-3 dark:text-white border dark:bg-slate-900 border-gray-300 dark:border-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 dark:text-white border dark:bg-slate-900 border-slate-800 dark:border-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="0" disabled className='dark:text-white'>Pilih Rating...</option>
             <option value="5">5 - Luar Biasa</option>
@@ -39,7 +39,7 @@ const ReviewForm = ({ onSubmit, isLoading }) => {
           <label className="block text-gray-700 font-semibold mb-2 dark:text-white">Komentar</label>
           <textarea
             rows="4"
-            className="w-full p-3 dark:bg-slate-900 dark:text-white dark:border-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 dark:bg-slate-900 dark:text-white text-slate-900 dark:border-white border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Bagikan pengalaman menginap Anda di kamar ini..."
