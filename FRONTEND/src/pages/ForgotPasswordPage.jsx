@@ -26,22 +26,22 @@ function ForgotPasswordPage() {
         <AuthLayout title="Reset Password Anda">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Terdaftar</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-900">Email Terdaftar</label>
                     <input
                         name="email"
                         type="email"
                         onChange={handleChange}
-                        className="input-style w-full"
+                        className="input-style w-full dark:text-gray-900"
                         required
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password Baru</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-900">Password Baru</label>
                     <input
                         name="newPassword"
                         type="password"
                         onChange={handleChange}
-                        className="input-style w-full"
+                        className="input-style w-full dark:text-gray-900"
                         required
                     />
                 </div>
@@ -54,7 +54,7 @@ function ForgotPasswordPage() {
                     </button>
                 </div>
             </form>
-            <p className="text-sm text-center mt-4">
+            <p className="text-sm text-center mt-4 dark:text-gray-900">
                 Ingat password Anda?{' '}
                 <Link to="/login" className="text-blue-600 hover:underline">
                     Kembali ke Login

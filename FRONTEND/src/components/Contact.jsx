@@ -21,12 +21,12 @@ function Contact() {
                 <div className="flex flex-col items-center">
                     <Mail className="w-10 h-10 text-blue-600 dark:text-blue-400 mb-3" />
                     <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Email</h4>
-                    <a href="mailto:reservasi@hotelmewah.com" className="text-blue-600 dark:text-blue-400 hover:underline">reservasi@hotelmewah.com</a>
+                    <a href="mailto:reservasi@hotelmewah.com" className="text-blue-600 dark:text-blue-400 hover:underline">afif@gmail.com</a>
                 </div>
                 <div className="flex flex-col items-center">
                     <Phone className="w-10 h-10 text-blue-600 dark:text-blue-400 mb-3" />
                     <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Telepon</h4>
-                    <p className="text-gray-600 dark:text-gray-300">(021) 123-4567</p>
+                    <p className="text-gray-600 dark:text-gray-300">+6289517644630</p>
                 </div>
             </div>
         </div>

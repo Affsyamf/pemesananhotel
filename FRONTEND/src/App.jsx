@@ -21,6 +21,7 @@ import PrintBookingPage from './pages/PrintBookingPage';
 import AdminLayout from './components/admin/AdminLayout';
 import ManageUsersPage from './pages/ManageUsersPage';
 import ManageRoomsPage from './pages/ManageRoomsPage';
+import RoomDetailPage from './pages/RoomDetailPage';
 
 function App() {
   return (
@@ -32,6 +33,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />}/>
+        <Route path="/" element={<BookRoomPage />} /> {/* Atau path Anda untuk daftar kamar */}
+        <Route path="/rooms/:roomId" element={<RoomDetailPage />} /> {/* <-- Tambahkan rute ini */}
 
         {/* --- RUTE USER YANG DIPERBARUI --- */}
         <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['user']} />}>
@@ -40,6 +43,7 @@ function App() {
             <Route index element={<Navigate to="book" replace />} />
             <Route path="book" element={<BookRoomPage />} />
             <Route path="my-bookings" element={<MyBookingsPage />} />
+            <Route path="rooms/:roomId" element={<RoomDetailPage />} />
           </Route>
         </Route>
 

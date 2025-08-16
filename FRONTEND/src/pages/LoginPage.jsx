@@ -47,11 +47,11 @@ function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-6 dar">
         <div>
           <label className="text-sm font-bold text-gray-900 block">Email</label>
-          <input name="email" type="email" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1 dark:text-gray-900" required />
+          <input name="email" type="email" onChange={handleChange} className="w-full p-2 border border-gray-300 dark:border-slate-900 rounded-md mt-1 dark:text-gray-900" required />
         </div>
         <div>
           <label className="text-sm font-bold text-gray-600 block">Password</label>
-          <input name="password" type="password" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md mt-1 dark:text-gray-900" required />
+          <input name="password" type="password" onChange={handleChange} className="w-full p-2 border border-gray-300  dark:border-slate-900 rounded-md mt-1 dark:text-gray-900" required />
         </div>
         <div className="text-right">
           <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">Lupa Password?</Link>

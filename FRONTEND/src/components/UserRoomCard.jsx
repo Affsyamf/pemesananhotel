@@ -1,6 +1,8 @@
 // frontend/src/components/UserRoomCard.jsx
 import React from 'react';
-import { DollarSign, Package, BedDouble } from 'lucide-react';
+import { DollarSign, Package, BedDouble, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 
 function UserRoomCard({ room, onBook }) {
   const formattedPrice = new Intl.NumberFormat('id-ID', {
@@ -25,6 +27,14 @@ function UserRoomCard({ room, onBook }) {
         <button onClick={() => onBook(room)} className="btn-primary w-full mt-4">
           Pesan Sekarang
         </button>
+
+         <Link 
+          to={`/dashboard/rooms/${room.id}`} 
+          className="btn-secondary w-full mt-2 flex items-center justify-center"
+        >
+          <Eye size={16} className="mr-2" />
+          Lihat Detail & Ulasan
+        </Link>
       </div>
     </div>
   );

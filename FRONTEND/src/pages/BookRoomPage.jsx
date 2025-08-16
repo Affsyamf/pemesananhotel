@@ -1,4 +1,3 @@
-// frontend/src/pages/BookRoomPage.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -21,19 +20,21 @@ function BookRoomPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  const fetchAllRooms = async () => {
+    try {
+      setLoading(true);
+      // PERUBAHAN 1: Menambahkan /public/ ke URL
+      const response = await axios.get('http://localhost:5001/api/public/rooms');
+      setAllRooms(response.data);
+    } catch (error) {
+      toast.error(error.response?.data?.message||'Gagal mengambil data kamar');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Ambil data kamar sekali saja saat komponen dimuat
   useEffect(() => {
-    const fetchAllRooms = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:5001/api/rooms');
-        setAllRooms(response.data);
-      } catch (error) {
-        toast.error(error.response?.data?.message||'Gagal mengambil data kamar');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAllRooms();
   }, []);
 
@@ -88,15 +89,15 @@ function BookRoomPage() {
     const formattedDate = data.booking_date.toISOString().split('T')[0];
 
     try {
-      await axios.post('http://localhost:5001/api/bookings', 
+      // PERUBAHAN 2: Menambahkan /public/ ke URL
+      await axios.post('http://localhost:5001/api/public/bookings', 
         { ...data, room_id: selectedRoom.id, booking_date: formattedDate }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Pemesanan Anda berhasil!', { id: toastId });
       handleCloseModal();
-      // Ambil ulang data karena stok berubah
-      const response = await axios.get('http://localhost:5001/api/rooms');
-      setAllRooms(response.data);
+      // Panggil fungsi fetchAllRooms yang sudah diperbarui
+      fetchAllRooms();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal membuat pesanan', { id: toastId });
     }

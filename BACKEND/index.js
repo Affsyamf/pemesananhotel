@@ -8,8 +8,6 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
- // <-- Import rute auth
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -18,9 +16,12 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes); // <-- Gunakan rute auth
+app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api', publicRoutes);
+
+// --- INI PERBAIKANNYA ---
+// Mengubah prefix dari '/api' menjadi '/api/public' agar cocok dengan frontend
+app.use('/api/public', publicRoutes);
 
 app.get('/api/test', (req, res) => {
   res.json({ message: '🎉 Halo! API backend berhasil terhubung!' });

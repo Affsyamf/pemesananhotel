@@ -14,6 +14,20 @@ router.get('/rooms', async (req, res) => {
     }
 });
 
+router.get('/rooms/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rooms] = await db.query('SELECT * FROM rooms WHERE id = ?', [id]);
+        if (rooms.length === 0) {
+            return res.status(404).json({ message: 'Kamar tidak ditemukan' });
+        }
+        res.json(rooms[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 router.get('/rooms/:roomId/reviews', async (req, res) => {
     try {
         const { roomId } = req.params;

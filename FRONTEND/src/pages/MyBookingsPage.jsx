@@ -15,7 +15,8 @@ function MyBookingsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/my-bookings', {
+      // PERUBAHAN 1: Menambahkan /public/ ke URL
+      const response = await axios.get('http://localhost:5001/api/public/my-bookings', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBookings(response.data);
@@ -45,7 +46,8 @@ function MyBookingsPage() {
     const toastId = toast.loading('Memproses pembatalan...');
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5001/api/bookings/${bookingToCancel.id}/cancel`, {}, {
+      // PERUBAHAN 2: Menambahkan /public/ ke URL
+      await axios.put(`http://localhost:5001/api/public/bookings/${bookingToCancel.id}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Pesanan berhasil dibatalkan', { id: toastId });

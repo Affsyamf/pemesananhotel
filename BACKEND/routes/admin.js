@@ -1,4 +1,3 @@
-// backend/routes/admin.js
 const express = require('express');
 const db = require('../db');
 const bcrypt = require('bcryptjs');
@@ -58,12 +57,14 @@ router.get('/rooms', async (req, res) => {
 router.post('/rooms', async (req, res) => {
     try {
         const { name, type, price, quantity, facilities, description, image_url } = req.body;
+        // Perbaikan: Pastikan jumlah placeholder (?) cocok dengan jumlah field
         await db.query(
-            'INSERT INTO rooms (name, type, price, description, image_url) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO rooms (name, type, price, quantity, facilities, description, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [name, type, price, quantity, facilities, description, image_url]
         );
         res.status(201).json({ message: 'Kamar berhasil ditambahkan' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -157,7 +158,7 @@ router.get('/booking/:id', async (req, res) => {
             `SELECT 
                 b.*, r.name AS room_name, r.type AS room_type, r.price, u.username, u.email
             FROM bookings b
-            JOI`N rooms r ON b.room_id = r.id
+            JOIN rooms r ON b.room_id = r.id
             JOIN users u ON b.user_id = u.id
             WHERE b.id = ?`,
             [id]

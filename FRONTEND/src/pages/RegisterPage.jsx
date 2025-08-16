@@ -45,7 +45,7 @@ function RegisterPage() {
             name="username"
             type="text"
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md mt-1"
+            className="w-full p-2 border border-slate-900 rounded-md mt-1 dark:text-slate-900"
             required
           />
         </div>
@@ -55,7 +55,7 @@ function RegisterPage() {
             name="email"
             type="email"
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md mt-1"
+            className="w-full p-2 border  border-slate-900 dark:text-slate-900 rounded-md mt-1"
             required
           />
         </div>
@@ -65,7 +65,7 @@ function RegisterPage() {
             name="password"
             type="password"
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md mt-1"
+            className="w-full p-2 border  border-slate-900 dark:text-slate-900 rounded-md mt-1"
             required
           />
         </div>
@@ -78,7 +78,7 @@ function RegisterPage() {
           </button>
         </div>
       </form>
-      <p className="text-sm text-center mt-4">
+      <p className="text-sm text-center mt-4 dark:text-slate-900 font-bold">
         Sudah punya akun?{' '}
         <Link to="/login" className="text-blue-600 hover:underline">
           Login di sini
