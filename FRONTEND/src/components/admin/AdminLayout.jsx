@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Hotel, Users, BedDouble, ListChecks, LogOut, Menu, CalendarDays} from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
+import { LayoutDashboard } from 'lucide-react';
 
 const SidebarLink = ({ to, icon, children, onClick }) => (
   <NavLink
@@ -36,6 +37,7 @@ function AdminLayout() {
           <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Admin Panel</h1>
         </div>
         <nav className="mt-10">
+          <SidebarLink to="/admin/dashboard" icon={<LayoutDashboard className="w-5 h-5" />}>Dashboard</SidebarLink>
            <SidebarLink to="/admin/users" icon={<Users className="w-5 h-5" />} onClick={() => setIsSidebarOpen(false)}>
             Users
           </SidebarLink>

@@ -24,6 +24,9 @@ import ManageRoomsPage from './pages/ManageRoomsPage';
 import RoomDetailPage from './pages/RoomDetailPage';
 import ManageAvailabilityPage from './pages/ManageAvailabilityPage';
 import UserProfilePage from './pages/UserProfilePage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+
+
 
 function App() {
   return (
@@ -63,7 +66,8 @@ function App() {
         {/* Rute Admin (tidak berubah) */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="users" replace />} />
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="users" element={<ManageUsersPage />} />
             <Route path="rooms" element={<ManageRoomsPage />} />
             <Route path="availability" element={<ManageAvailabilityPage />} />

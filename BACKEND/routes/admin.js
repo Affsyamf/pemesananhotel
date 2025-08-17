@@ -240,6 +240,59 @@ router.put('/availability', async (req, res) => {
     }
 });
 
+// --- API UNTUK DASHBOARD STATISTIK (FITUR BARU) ---
+router.get('/stats', async (req, res) => {
+    try {
+        // 1. Hitung total pengguna (hanya role 'user')
+        const [usersResult] = await db.query("SELECT COUNT(*) as totalUsers FROM users WHERE role = 'user'");
+        
+        // 2. Hitung total pesanan yang sudah dikonfirmasi
+        const [bookingsResult] = await db.query("SELECT COUNT(*) as totalBookings FROM bookings WHERE status = 'confirmed'");
+        
+        // 3. Hitung total pendapatan bulan ini
+        const [revenueResult] = await db.query(`
+            SELECT SUM(r.price) as monthlyRevenue
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            WHERE b.status = 'confirmed'
+            AND MONTH(b.check_in_date) = MONTH(CURDATE())
+            AND YEAR(b.check_in_date) = YEAR(CURDATE())
+        `);
+        
+        // 4. Ambil 5 pesanan terakhir
+        const [recentBookings] = await db.query(`
+            SELECT b.id, r.name as room_name, u.username as user_username, b.created_at
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN users u ON b.user_id = u.id
+            ORDER BY b.created_at DESC
+            LIMIT 5
+        `);
+        
+        // 5. (Untuk Grafik) Ambil pendapatan 6 bulan terakhir
+        const [monthlyRevenueData] = await db.query(`
+            SELECT 
+                DATE_FORMAT(check_in_date, '%Y-%m') AS month,
+                SUM(r.price) AS revenue
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            WHERE b.status = 'confirmed' AND b.check_in_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            GROUP BY month
+            ORDER BY month ASC;
+        `);
 
+        res.json({
+            totalUsers: usersResult[0].totalUsers,
+            totalBookings: bookingsResult[0].totalBookings,
+            monthlyRevenue: revenueResult[0].monthlyRevenue || 0,
+            recentBookings,
+            monthlyRevenueChart: monthlyRevenueData
+        });
+
+    } catch (error) {
+        console.error("Error fetching admin stats:", error);
+        res.status(500).json({ message: "Server Error" });
+    }
+});
 
 module.exports = router;
