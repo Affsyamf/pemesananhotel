@@ -23,6 +23,7 @@ import ManageUsersPage from './pages/ManageUsersPage';
 import ManageRoomsPage from './pages/ManageRoomsPage';
 import RoomDetailPage from './pages/RoomDetailPage';
 import ManageAvailabilityPage from './pages/ManageAvailabilityPage';
+import UserProfilePage from './pages/UserProfilePage';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
             <Route index element={<Navigate to="book" replace />} />
             <Route path="book" element={<BookRoomPage />} />
             <Route path="my-bookings" element={<MyBookingsPage />} />
+            <Route path="profile" element={<UserProfilePage />} />
             <Route path="rooms/:roomId" element={<RoomDetailPage />} />
           </Route>
         </Route>
