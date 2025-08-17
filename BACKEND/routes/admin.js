@@ -97,10 +97,11 @@ router.delete('/rooms/:id', async (req, res) => {
 // GET all bookings
 router.get('/bookings', async (req, res) => {
     try {
-        // Query dengan JOIN untuk mendapatkan info user dan kamar
+        // Query sekarang mengambil created_at, check_in_date, dan check_out_date
         const [bookings] = await db.query(`
             SELECT 
-                b.id, b.guest_name, b.booking_date, b.status,
+                b.id, b.guest_name, b.status,
+                b.created_at, b.check_in_date, b.check_out_date,
                 u.username AS user_username,
                 r.name AS room_name
             FROM bookings b
@@ -172,6 +173,73 @@ router.get('/booking/:id', async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
+
+router.get('/availability/:roomId', async (req, res) => {
+    const { roomId } = req.params;
+    // Ambil bulan dan tahun dari query, default ke bulan ini jika tidak ada
+    const year = req.query.year || new Date().getFullYear();
+    const month = req.query.month || new Date().getMonth() + 1;
+
+    try {
+        const availabilitySql = `
+            SELECT 
+                id, 
+                date, 
+                available_quantity, 
+                is_active
+            FROM room_availability
+            WHERE 
+                room_id = ? 
+                AND YEAR(date) = ? 
+                AND MONTH(date) = ?
+            ORDER BY date ASC;
+        `;
+        const [availabilityData] = await db.query(availabilitySql, [roomId, year, month]);
+        res.json(availabilityData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error saat mengambil data ketersediaan' });
+    }
+});
+
+// Endpoint untuk memperbarui ketersediaan (jumlah & status aktif)
+// Menerima array of updates untuk efisiensi
+router.put('/availability', async (req, res) => {
+    const { updates } = req.body; // updates akan berbentuk: [{ id: 1, quantity: 8, isActive: true }, { id: 2, ... }]
+
+    if (!updates || !Array.isArray(updates) || updates.length === 0) {
+        return res.status(400).json({ message: 'Data update tidak valid' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Looping melalui setiap update dan jalankan query
+        for (const update of updates) {
+            const { id, quantity, isActive } = update;
+            const updateSql = `
+                UPDATE room_availability 
+                SET 
+                    available_quantity = ?, 
+                    is_active = ? 
+                WHERE id = ?;
+            `;
+            await connection.query(updateSql, [quantity, isActive, id]);
+        }
+
+        await connection.commit();
+        res.json({ message: 'Ketersediaan berhasil diperbarui' });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Server Error saat memperbarui ketersediaan' });
+    } finally {
+        connection.release();
+    }
+});
+
 
 
 module.exports = router;

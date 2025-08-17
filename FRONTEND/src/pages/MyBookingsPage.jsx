@@ -15,7 +15,6 @@ function MyBookingsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      // PERUBAHAN 1: Menambahkan /public/ ke URL
       const response = await axios.get('http://localhost:5001/api/public/my-bookings', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -46,7 +45,6 @@ function MyBookingsPage() {
     const toastId = toast.loading('Memproses pembatalan...');
     try {
       const token = localStorage.getItem('token');
-      // PERUBAHAN 2: Menambahkan /public/ ke URL
       await axios.put(`http://localhost:5001/api/public/bookings/${bookingToCancel.id}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -56,6 +54,10 @@ function MyBookingsPage() {
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal membatalkan pesanan', { id: toastId });
     }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   return (
@@ -76,7 +78,10 @@ function MyBookingsPage() {
                         <tr>
                             <th className="th-style dark:text-gray-100">ID Pesanan</th>
                             <th className="th-style dark:text-gray-100">Nama Kamar</th>
-                            <th className="th-style dark:text-gray-100">Tanggal Booking</th>
+                            {/* --- PERUBAHAN DI SINI --- */}
+                            <th className="th-style dark:text-gray-100">Tanggal Pesan</th>
+                            <th className="th-style dark:text-gray-100">Check-in</th>
+                            <th className="th-style dark:text-gray-100">Check-out</th>
                             <th className="th-style dark:text-gray-100">Status</th>
                             <th className="th-style dark:text-gray-100">Aksi</th>
                         </tr>
@@ -86,7 +91,10 @@ function MyBookingsPage() {
                             <tr key={booking.id}>
                                 <td className="td-style font-mono dark:text-gray-300">#{booking.id}</td>
                                 <td className="td-style font-semibold text-gray-800 dark:text-gray-200">{booking.room_name}</td>
-                                <td className="td-style dark:text-gray-300">{new Date(booking.booking_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                                {/* --- PERUBAHAN DI SINI --- */}
+                                <td className="td-style dark:text-gray-300">{formatDate(booking.created_at)}</td>
+                                <td className="td-style dark:text-gray-300">{formatDate(booking.check_in_date)}</td>
+                                <td className="td-style dark:text-gray-300">{formatDate(booking.check_out_date)}</td>
                                 <td className="td-style">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {booking.status}

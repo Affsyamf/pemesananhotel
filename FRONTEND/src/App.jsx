@@ -22,6 +22,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import ManageUsersPage from './pages/ManageUsersPage';
 import ManageRoomsPage from './pages/ManageRoomsPage';
 import RoomDetailPage from './pages/RoomDetailPage';
+import ManageAvailabilityPage from './pages/ManageAvailabilityPage';
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
             <Route index element={<Navigate to="users" replace />} />
             <Route path="users" element={<ManageUsersPage />} />
             <Route path="rooms" element={<ManageRoomsPage />} />
+            <Route path="availability" element={<ManageAvailabilityPage />} />
             <Route path="bookings" element={<ManageBookingsPage />} />
           </Route>
         </Route>

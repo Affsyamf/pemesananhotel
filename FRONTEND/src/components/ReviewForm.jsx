@@ -17,7 +17,7 @@ const ReviewForm = ({ onSubmit, isLoading }) => {
   };
 
   return (
-    <div className="mt-10 p-6 bg-white border-slate-800 rounded-lg shadow-md dark:bg-slate-900">
+    <div className="mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-slate-900">
       <h3 className="text-2xl font-bold mb-4 dark:text-white">Tulis Ulasan Anda</h3>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

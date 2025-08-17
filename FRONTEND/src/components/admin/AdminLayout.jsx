@@ -1,7 +1,7 @@
 // frontend/src/components/admin/AdminLayout.jsx
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Users, BedDouble, ListChecks, LogOut, Menu } from 'lucide-react';
+import { Hotel, Users, BedDouble, ListChecks, LogOut, Menu, CalendarDays} from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 
 const SidebarLink = ({ to, icon, children, onClick }) => (
@@ -42,6 +42,7 @@ function AdminLayout() {
           <SidebarLink to="/admin/rooms" icon={<BedDouble className="w-5 h-5" />} onClick={() => setIsSidebarOpen(false)}>
             Kamar
           </SidebarLink>
+          <SidebarLink to="/admin/availability" icon={<CalendarDays className="w-5 h-5" />}>Kelola Inventaris</SidebarLink>
           {/* TAMBAHKAN LINK BARU DI SINI */}
           <SidebarLink to="/admin/bookings" icon={<ListChecks className="w-5 h-5" />} onClick={() => setIsSidebarOpen(false)}>
             Riwayat Pesanan
