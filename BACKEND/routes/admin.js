@@ -10,12 +10,28 @@ router.use(isAuthenticated, isAdmin);
 // === CRUD USERS ===
 // GET all users
 router.get('/users', async (req, res) => {
-  try {
-    const [users] = await db.query('SELECT id, username, email, role FROM users ORDER BY created_at DESC');
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
+    try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+
+        // Query untuk mengambil data per halaman
+        const [users] = await db.query(
+            'SELECT id, username, email, role FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?',
+            [limit, offset]
+        );
+
+        // Query untuk menghitung total data
+        const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM users');
+        
+        res.json({
+            data: users,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
 
 // UPDATE a user
@@ -97,7 +113,11 @@ router.delete('/rooms/:id', async (req, res) => {
 // GET all bookings
 router.get('/bookings', async (req, res) => {
     try {
-        // Query sekarang mengambil created_at, check_in_date, dan check_out_date
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+
+        // Query untuk mengambil data per halaman
         const [bookings] = await db.query(`
             SELECT 
                 b.id, b.guest_name, b.status,
@@ -108,8 +128,17 @@ router.get('/bookings', async (req, res) => {
             JOIN users u ON b.user_id = u.id
             JOIN rooms r ON b.room_id = r.id
             ORDER BY b.created_at DESC
-        `);
-        res.json(bookings);
+            LIMIT ? OFFSET ?
+        `, [limit, offset]);
+
+        // Query untuk menghitung total data
+        const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM bookings');
+
+        res.json({
+            data: bookings,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });

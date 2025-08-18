@@ -3,21 +3,30 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Trash2 } from 'lucide-react';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
+import Pagination from '../components/admin/Pagination'; // <-- Import komponen paginasi
 
 function ManageBookingsPage() {
-    const [bookings, setBookings] = useState([]);
+    // PERBAIKAN 1: State diubah untuk menampung data paginasi
+    const [pageData, setPageData] = useState({
+        data: [],
+        totalPages: 1,
+        currentPage: 1
+    });
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    const fetchBookings = useCallback(async () => {
+    const fetchBookings = useCallback(async (page) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5001/api/admin/bookings', {
+            // PERBAIKAN 2: URL sekarang menyertakan parameter page & limit
+            const response = await axios.get(`http://localhost:5001/api/admin/bookings?page=${page}&limit=10`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setBookings(response.data);
+            // PERBAIKAN 3: Simpan seluruh objek respon, bukan hanya data
+            setPageData(response.data);
         } catch (error) {
             toast.error(error.response?.data?.message||'Gagal mengambil data pesanan.');
         } finally {
@@ -26,8 +35,12 @@ function ManageBookingsPage() {
     }, []);
 
     useEffect(() => {
-        fetchBookings();
-    }, [fetchBookings]);
+        fetchBookings(currentPage); 
+    }, [currentPage, fetchBookings]);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
 
     const openDeleteModal = (booking) => {
         setBookingToDelete(booking);
@@ -48,7 +61,7 @@ function ManageBookingsPage() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Pesanan berhasil dihapus.', { id: toastId });
-            fetchBookings(); // Refresh data
+            fetchBookings(currentPage); // Refresh data di halaman saat ini
             closeDeleteModal();
         } catch (error) {
             toast.error(error.response?.data?.message||'Gagal menghapus pesanan.', { id: toastId });
@@ -80,10 +93,11 @@ function ManageBookingsPage() {
                             {loading ? (
                                 <tr><td colSpan="8" className="text-center p-4">Memuat data...</td></tr>
                             ) : (
-                                bookings.map(booking => (
+                                // PERBAIKAN 4: Gunakan pageData.data untuk me-render
+                                pageData.data.map(booking => (
                                     <tr key={booking.id}>
-                                        <td className="td-style font-mono dark:text-white">#{booking.id}</td>
-                                        <td className="td-style font-semibold dark:text-white">{booking.room_name}</td>
+                                        <td className="td-style dark:text-white font-mono">#{booking.id}</td>
+                                        <td className="td-style dark:text-white font-semibold">{booking.room_name}</td>
                                         <td className="td-style dark:text-white">{booking.user_username}</td>
                                         <td className="td-style dark:text-white">{formatDate(booking.created_at)}</td>
                                         <td className="td-style dark:text-white">{formatDate(booking.check_in_date)}</td>
@@ -104,6 +118,12 @@ function ManageBookingsPage() {
                         </tbody>
                     </table>
                 </div>
+                {/* PERBAIKAN 5: Tambahkan komponen Pagination */}
+                <Pagination
+                    currentPage={pageData.currentPage}
+                    totalPages={pageData.totalPages}
+                    onPageChange={handlePageChange}
+                />
             </div>
 
             <ConfirmationModal

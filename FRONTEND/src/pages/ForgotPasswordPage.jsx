@@ -1,66 +1,77 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import AuthLayout from '../components/AuthLayout';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
 
 function ForgotPasswordPage() {
-    const [formData, setFormData] = useState({ email: '', newPassword: '' });
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const toastId = toast.loading('Memproses permintaan...');
+        setLoading(true);
+        setMessage('');
         try {
-            const response = await axios.post('http://localhost:5001/api/auth/forgot-password', formData);
-            toast.success(response.data.message, { id: toastId });
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Gagal memperbarui password', { id: toastId });
+            const response = await axios.post('http://localhost:5001/api/auth/forgot-password', { email });
+            setMessage(response.data.message);
+            toast.success('Permintaan terkirim!');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Terjadi kesalahan.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <AuthLayout title="Reset Password Anda">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-900">Email Terdaftar</label>
-                    <input
-                        name="email"
-                        type="email"
-                        onChange={handleChange}
-                        className="input-style w-full dark:text-gray-900"
-                        required
-                    />
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white">Lupa Password</h1>
+                <p className="text-center text-gray-600 dark:text-gray-400">
+                    Masukkan email Anda dan kami akan mengirimkan instruksi untuk mereset password Anda.
+                </p>
+                
+                {message ? (
+                    <div className="p-4 text-center bg-green-100 text-green-800 rounded-lg dark:bg-green-900/50 dark:text-green-300">
+                        <p>{message}</p>
+                        <p className="mt-2 text-sm">Silakan periksa terminal backend Anda untuk melihat link reset (simulasi email).</p>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label htmlFor="email" className="label-style">Alamat Email</label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="input-style pl-10"
+                                    placeholder="anda@email.com"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" disabled={loading} className="btn-primary w-full">
+                                {loading ? 'Mengirim...' : 'Kirim Instruksi Reset'}
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                <div className="text-center">
+                    <Link to="/login" className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+                        Kembali ke Login
+                    </Link>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-900">Password Baru</label>
-                    <input
-                        name="newPassword"
-                        type="password"
-                        onChange={handleChange}
-                        className="input-style w-full dark:text-gray-900"
-                        required
-                    />
-                </div>
-                <div>
-                    <button
-                        type="submit"
-                        className="btn-primary w-full"
-                    >
-                        Reset Password
-                    </button>
-                </div>
-            </form>
-            <p className="text-sm text-center mt-4 dark:text-gray-900">
-                Ingat password Anda?{' '}
-                <Link to="/login" className="text-blue-600 hover:underline">
-                    Kembali ke Login
-                </Link>
-            </p>
-        </AuthLayout>
+            </div>
+        </div>
     );
 }
 

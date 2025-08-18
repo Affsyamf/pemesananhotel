@@ -54,7 +54,7 @@ function LoginPage() {
           <input name="password" type="password" onChange={handleChange} className="w-full p-2 border border-gray-300  dark:border-slate-900 rounded-md mt-1 dark:text-gray-900" required />
         </div>
         <div className="text-right">
-          <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">Lupa Password?</Link>
+          <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">Lupa password?</Link>
         </div>
         <div>
           <button type="submit" className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold">Login</button>

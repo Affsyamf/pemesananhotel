@@ -10,7 +10,6 @@ import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 // Halaman & Komponen Terlindungi
 import ProtectedRoute from './components/ProtectedRoute';
@@ -25,6 +24,8 @@ import RoomDetailPage from './pages/RoomDetailPage';
 import ManageAvailabilityPage from './pages/ManageAvailabilityPage';
 import UserProfilePage from './pages/UserProfilePage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage'; 
+import ResetPasswordPage from './pages/ResetPasswordPage';   
 
 
 
@@ -37,7 +38,8 @@ function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />}/>
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/" element={<BookRoomPage />} /> {/* Atau path Anda untuk daftar kamar */}
         <Route path="/rooms/:roomId" element={<RoomDetailPage />} /> {/* <-- Tambahkan rute ini */}
 
@@ -66,7 +68,7 @@ function App() {
         {/* Rute Admin (tidak berubah) */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route element={<AdminLayout />}>
-            <Route index element={<AdminDashboardPage />} />
+             <Route index element={<AdminDashboardPage />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="users" element={<ManageUsersPage />} />
             <Route path="rooms" element={<ManageRoomsPage />} />
