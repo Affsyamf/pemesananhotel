@@ -117,7 +117,6 @@ router.get('/bookings', async (req, res) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const offset = (page - 1) * limit;
 
-        // Query untuk mengambil data per halaman
         const [bookings] = await db.query(`
             SELECT 
                 b.id, b.guest_name, b.status,
@@ -131,7 +130,6 @@ router.get('/bookings', async (req, res) => {
             LIMIT ? OFFSET ?
         `, [limit, offset]);
 
-        // Query untuk menghitung total data
         const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM bookings');
 
         res.json({
@@ -272,23 +270,20 @@ router.put('/availability', async (req, res) => {
 // --- API UNTUK DASHBOARD STATISTIK (FITUR BARU) ---
 router.get('/stats', async (req, res) => {
     try {
-        // 1. Hitung total pengguna (hanya role 'user')
+        // ... (query untuk totalUsers dan totalBookings tidak berubah) ...
         const [usersResult] = await db.query("SELECT COUNT(*) as totalUsers FROM users WHERE role = 'user'");
-        
-        // 2. Hitung total pesanan yang sudah dikonfirmasi
         const [bookingsResult] = await db.query("SELECT COUNT(*) as totalBookings FROM bookings WHERE status = 'confirmed'");
         
-        // 3. Hitung total pendapatan bulan ini
+        // PERBAIKAN: Hitung pendapatan dari kolom 'total_price' di tabel bookings
         const [revenueResult] = await db.query(`
-            SELECT SUM(r.price) as monthlyRevenue
-            FROM bookings b
-            JOIN rooms r ON b.room_id = r.id
-            WHERE b.status = 'confirmed'
-            AND MONTH(b.check_in_date) = MONTH(CURDATE())
-            AND YEAR(b.check_in_date) = YEAR(CURDATE())
+            SELECT SUM(total_price) as monthlyRevenue
+            FROM bookings
+            WHERE status = 'confirmed'
+            AND MONTH(check_in_date) = MONTH(CURDATE())
+            AND YEAR(check_in_date) = YEAR(CURDATE())
         `);
         
-        // 4. Ambil 5 pesanan terakhir
+        // --- PERBAIKAN DI SINI: Query '...' diganti dengan query yang benar ---
         const [recentBookings] = await db.query(`
             SELECT b.id, r.name as room_name, u.username as user_username, b.created_at
             FROM bookings b
@@ -297,15 +292,14 @@ router.get('/stats', async (req, res) => {
             ORDER BY b.created_at DESC
             LIMIT 5
         `);
-        
-        // 5. (Untuk Grafik) Ambil pendapatan 6 bulan terakhir
+
+        // PERBAIKAN: Grafik pendapatan juga dari 'total_price'
         const [monthlyRevenueData] = await db.query(`
             SELECT 
                 DATE_FORMAT(check_in_date, '%Y-%m') AS month,
-                SUM(r.price) AS revenue
-            FROM bookings b
-            JOIN rooms r ON b.room_id = r.id
-            WHERE b.status = 'confirmed' AND b.check_in_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                SUM(total_price) AS revenue
+            FROM bookings
+            WHERE status = 'confirmed' AND check_in_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
             GROUP BY month
             ORDER BY month ASC;
         `);
@@ -321,6 +315,37 @@ router.get('/stats', async (req, res) => {
     } catch (error) {
         console.error("Error fetching admin stats:", error);
         res.status(500).json({ message: "Server Error" });
+    }
+});
+
+router.get('/bookings/new-count', async (req, res) => {
+    try {
+        const [[{ count }]] = await db.query("SELECT COUNT(*) as count FROM bookings WHERE is_new = TRUE");
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// --- ENDPOINT BARU UNTUK MENYETUJUI PESANAN ---
+router.put('/bookings/:id/confirm', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Update status menjadi 'confirmed' dan tandai sebagai tidak baru lagi (is_new = FALSE)
+        // Ini akan secara otomatis mengurangi jumlah notifikasi
+        const [result] = await db.query(
+            "UPDATE bookings SET status = 'confirmed', is_new = FALSE WHERE id = ? AND status = 'pending'",
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau sudah dikonfirmasi.' });
+        }
+        
+        res.json({ message: 'Pesanan berhasil dikonfirmasi.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 

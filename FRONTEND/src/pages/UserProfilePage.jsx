@@ -97,15 +97,15 @@ function UserProfilePage() {
                     <form onSubmit={handlePasswordSubmit} className="space-y-4">
                         <div>
                             <label className="label-style">Password Lama</label>
-                            <input type="password" name="oldPassword" value={passwords.oldPassword} onChange={handlePasswordChange} className="input-style" required />
+                            <input type="password" name="oldPassword" value={passwords.oldPassword} onChange={handlePasswordChange} className="input-style dark:bg-slate-900 text-slate-900 dark:text-white" required />
                         </div>
                         <div>
                             <label className="label-style">Password Baru</label>
-                            <input type="password" name="newPassword" value={passwords.newPassword} onChange={handlePasswordChange} className="input-style" required />
+                            <input type="password" name="newPassword" value={passwords.newPassword} onChange={handlePasswordChange} className="input-style dark:bg-slate-900 text-slate-900 dark:text-white" required />
                         </div>
                         <div>
                             <label className="label-style">Konfirmasi Password Baru</label>
-                            <input type="password" name="confirmNewPassword" value={passwords.confirmNewPassword} onChange={handlePasswordChange} className="input-style" required />
+                            <input type="password" name="confirmNewPassword" value={passwords.confirmNewPassword} onChange={handlePasswordChange} className="input-style dark:bg-slate-900 text-slate-900 dark:text-white" required />
                         </div>
                         <button type="submit" disabled={saving} className="btn-primary w-full flex items-center justify-center">
                             <Save size={18} className="mr-2" />

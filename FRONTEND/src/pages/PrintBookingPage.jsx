@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // <-- Import Link
 import toast from 'react-hot-toast';
-import { Hotel, Calendar, User, BedDouble } from 'lucide-react'; // Import ikon
+import { Hotel, Calendar, User, BedDouble, ArrowLeft } from 'lucide-react'; // <-- Import ArrowLeft
 
 function PrintBookingPage() {
     const { bookingId } = useParams();
@@ -13,7 +13,6 @@ function PrintBookingPage() {
         const fetchBookingDetails = async () => {
             try {
                 const token = localStorage.getItem('token');
-                // Endpoint ini sudah ada di public.js dan seharusnya mengembalikan semua detail booking
                 const response = await axios.get(`http://localhost:5001/api/public/booking/${bookingId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -25,7 +24,6 @@ function PrintBookingPage() {
                 setLoading(false);
             }
         };
-
         fetchBookingDetails();
     }, [bookingId]);
 
@@ -35,17 +33,33 @@ function PrintBookingPage() {
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
     const formatCurrency = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 
+    const numberOfNights = (new Date(booking.check_out_date) - new Date(booking.check_in_date)) / (1000 * 60 * 60 * 24);
+
     return (
-        <div className="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+        <div className="bg-gray-100 min-h-screen flex items-center justify-center p-4 print-wrapper">
             <style>{`
                 @media print {
-                    body { -webkit-print-color-adjust: exact; margin: 0; }
-                    .no-print { display: none; }
-                    .print-container { 
+                    body { 
+                        -webkit-print-color-adjust: exact; 
+                        print-color-adjust: exact;
+                        background-color: #ffffff;
                         margin: 0;
+                    }
+                    .print-wrapper {
                         padding: 0;
+                        background-color: #ffffff;
+                    }
+                    .print-container {
+                        width: 100%;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 2rem;
                         box-shadow: none;
                         border: none;
+                        border-radius: 0;
+                    }
+                    .no-print {
+                        display: none;
                     }
                 }
             `}</style>
@@ -61,13 +75,14 @@ function PrintBookingPage() {
                             <p className="text-gray-500">Status: <span className="font-semibold text-green-600 capitalize">{booking.status}</span></p>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <p className="font-bold text-gray-700">ID Pesanan</p>
-                        <p className="text-lg font-mono text-blue-600">#{booking.id}</p>
+                    {/* --- PERBAIKAN TAMPILAN ID --- */}
+                     <div className="text-right">
+                        <p className="text-lg font-bold text-gray-700">Pesanan Anda ke-{booking.user_booking_sequence}</p>
+                        <p className="text-sm text-gray-500">ID Referensi: #{booking.id}</p>
                     </div>
                 </div>
 
-                {/* Detail Pemesan & Tamu */}
+                {/* ... (sisa kode tidak berubah) ... */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <h2 className="text-sm font-bold text-gray-500 uppercase flex items-center mb-3"><User size={14} className="mr-2"/> Dipesan Oleh</h2>
@@ -81,19 +96,22 @@ function PrintBookingPage() {
                     </div>
                 </div>
 
-                {/* Detail Kamar */}
                 <div className="mb-8">
-                    <h2 className="text-sm font-bold text-gray-500 uppercase flex items-center mb-3"><BedDouble size={14} className="mr-2"/> Detail Kamar</h2>
-                    <div className="border border-gray-200 rounded-lg p-6 flex justify-between items-center">
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900">{booking.room_name}</p>
-                            <p className="text-gray-600">{booking.room_type}</p>
+                    <h2 className="text-sm font-bold text-gray-500 uppercase flex items-center mb-3"><BedDouble size={14} className="mr-2"/> Detail Pembayaran</h2>
+                    <div className="border border-gray-200 rounded-lg p-6">
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <p className="text-2xl font-bold text-gray-900">{booking.room_name}</p>
+                                <p className="text-gray-600">{booking.room_type}</p>
+                            </div>
+                            <p className="text-2xl font-bold text-blue-600">{formatCurrency(booking.total_price)}</p>
                         </div>
-                        <p className="text-2xl font-bold text-blue-600">{formatCurrency(booking.price)}</p>
+                        <div className="text-right text-sm text-gray-500">
+                            ({formatCurrency(booking.price_per_night)} x {numberOfNights} malam)
+                        </div>
                     </div>
                 </div>
 
-                {/* Detail Tanggal */}
                 <div className="grid grid-cols-3 gap-4 bg-blue-50 p-6 rounded-lg text-center">
                     <div>
                         <h2 className="text-sm font-bold text-gray-500 uppercase flex items-center justify-center mb-2"><Calendar size={14} className="mr-2"/> Tanggal Pesan</h2>
@@ -112,9 +130,16 @@ function PrintBookingPage() {
                 {/* Footer */}
                 <div className="mt-10 pt-6 border-t border-gray-100 text-center text-gray-500 text-sm">
                     <p>Terima kasih telah melakukan reservasi. Mohon tunjukkan bukti ini saat check-in.</p>
-                    <button onClick={() => window.print()} className="no-print mt-6 btn-primary">
-                        Cetak Ulang
-                    </button>
+                    {/* --- PERBAIKAN TOMBOL --- */}
+                    <div className="no-print mt-6 flex justify-center items-center space-x-4">
+                        <Link to="/dashboard/my-bookings" className="btn-secondary flex items-center">
+                            <ArrowLeft size={16} className="mr-2" />
+                            Kembali ke Riwayat
+                        </Link>
+                        <button onClick={() => window.print()} className="btn-primary">
+                            Cetak Ulang
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

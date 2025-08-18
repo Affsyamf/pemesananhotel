@@ -89,9 +89,8 @@ function MyBookingsPage() {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {bookings.map(booking => (
                             <tr key={booking.id}>
-                                <td className="td-style font-mono dark:text-gray-300">#{booking.id}</td>
+                               <td className="td-style font-mono dark:text-gray-300">#{booking.user_booking_sequence}</td>
                                 <td className="td-style font-semibold text-gray-800 dark:text-gray-200">{booking.room_name}</td>
-                                {/* --- PERUBAHAN DI SINI --- */}
                                 <td className="td-style dark:text-gray-300">{formatDate(booking.created_at)}</td>
                                 <td className="td-style dark:text-gray-300">{formatDate(booking.check_in_date)}</td>
                                 <td className="td-style dark:text-gray-300">{formatDate(booking.check_out_date)}</td>

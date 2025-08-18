@@ -196,7 +196,15 @@ router.post('/bookings', isAuthenticated, async (req, res) => {
     try {
         await connection.beginTransaction();
         
-        // 1. Kunci dan periksa ketersediaan untuk setiap hari dalam rentang tanggal
+        // Dapatkan detail kamar, termasuk harga per malam
+        const [roomDetails] = await connection.query('SELECT price, quantity FROM rooms WHERE id = ? FOR UPDATE', [room_id]);
+        if (roomDetails.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Kamar tidak ditemukan.' });
+        }
+        const roomPrice = roomDetails[0].price;
+
+        // ... (logika validasi ketersediaan yang sudah ada, tidak perlu diubah) ...
         const checkAvailabilitySql = `
             SELECT date, available_quantity FROM room_availability
             WHERE room_id = ? AND date >= ? AND date < ? AND is_active = TRUE
@@ -204,20 +212,17 @@ router.post('/bookings', isAuthenticated, async (req, res) => {
         `;
         const [availability] = await connection.query(checkAvailabilitySql, [room_id, check_in_date, check_out_date]);
 
-        // Periksa apakah semua hari dalam rentang ada di database dan tersedia
         const dateDiff = (new Date(check_out_date) - new Date(check_in_date)) / (1000 * 60 * 60 * 24);
-        if (availability.length !== dateDiff) {
+        if (availability.length !== dateDiff || availability.some(day => day.available_quantity <= 0)) {
             await connection.rollback();
-            return res.status(400).json({ message: 'Beberapa tanggal tidak tersedia untuk pemesanan.' });
+            return res.status(400).json({ message: 'Kamar tidak tersedia pada sebagian atau seluruh tanggal yang dipilih.' });
         }
-        for (const day of availability) {
-            if (day.available_quantity <= 0) {
-                await connection.rollback();
-                return res.status(400).json({ message: `Kamar penuh pada tanggal ${day.date.toISOString().split('T')[0]}` });
-            }
-        }
+        
+        // --- LOGIKA BARU: HITUNG TOTAL HARGA ---
+        const numberOfNights = dateDiff;
+        const totalPrice = roomPrice * numberOfNights;
 
-        // 2. Jika semua tersedia, kurangi stok untuk setiap hari
+        // Kurangi stok untuk setiap hari
         const updateAvailabilitySql = `
             UPDATE room_availability 
             SET available_quantity = available_quantity - 1 
@@ -225,10 +230,10 @@ router.post('/bookings', isAuthenticated, async (req, res) => {
         `;
         await connection.query(updateAvailabilitySql, [room_id, check_in_date, check_out_date]);
 
-        // 3. Masukkan data pemesanan
+        // Masukkan data pemesanan, sekarang dengan total_price
         await connection.query(
-            'INSERT INTO bookings (user_id, room_id, guest_name, guest_address, check_in_date, check_out_date) VALUES (?, ?, ?, ?, ?, ?)',
-            [user_id, room_id, guest_name, guest_address, check_in_date, check_out_date]
+            'INSERT INTO bookings (user_id, room_id, guest_name, guest_address, total_price, check_in_date, check_out_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [user_id, room_id, guest_name, guest_address, totalPrice, check_in_date, check_out_date]
         );
         
         await connection.commit();
@@ -247,17 +252,12 @@ router.post('/bookings', isAuthenticated, async (req, res) => {
 router.get('/my-bookings', isAuthenticated, async (req, res) => {
     try {
         const userId = req.user.id;
-        // Menambahkan b.created_at untuk tanggal pemesanan
+        // Menggunakan window function ROW_NUMBER() untuk membuat nomor urut per pengguna
         const [bookings] = await db.query(
             `SELECT 
-                b.id, 
-                b.check_in_date, 
-                b.check_out_date,
-                b.created_at,
-                b.status,
-                r.name AS room_name, 
-                r.price,
-                r.image_url
+                b.id, b.check_in_date, b.check_out_date, b.created_at, b.status,
+                r.name AS room_name, r.price, r.image_url,
+                (SELECT COUNT(*) FROM bookings b2 WHERE b2.user_id = b.user_id AND b2.created_at <= b.created_at) as user_booking_sequence
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
             WHERE b.user_id = ?
@@ -278,7 +278,8 @@ router.get('/booking/:id', isAuthenticated, async (req, res) => {
         const userId = req.user.id;
         const [bookingDetails] = await db.query(
             `SELECT 
-                b.*, r.name AS room_name, r.type AS room_type, r.price, u.username, u.email
+                b.*, r.name AS room_name, r.type AS room_type, r.price AS price_per_night,
+                u.username, u.email
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
             JOIN users u ON b.user_id = u.id
@@ -286,15 +287,20 @@ router.get('/booking/:id', isAuthenticated, async (req, res) => {
             [id, userId]
         );
         if (bookingDetails.length === 0) {
-            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau Anda tidak memiliki akses' });
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
         }
-        res.json(bookingDetails[0]);
+        const booking = bookingDetails[0];
+        const [[{ sequence_number }]] = await db.query(
+            `SELECT COUNT(*) as sequence_number FROM bookings WHERE user_id = ? AND created_at <= ?`,
+            [userId, booking.created_at]
+        );
+        booking.user_booking_sequence = sequence_number;
+        res.json(booking);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
-
 // Endpoint untuk user membatalkan pesanannya (YANG HILANG)
 router.put('/bookings/:bookingId/cancel', isAuthenticated, async (req, res) => {
     const { bookingId } = req.params;
@@ -328,6 +334,16 @@ router.put('/bookings/:bookingId/cancel', isAuthenticated, async (req, res) => {
         
         await connection.commit();
         res.json({ message: 'Pesanan berhasil dibatalkan.' });
+
+        console.log('============================================');
+        console.log('📧 SIMULASI: Mengirim Email Konfirmasi...');
+        console.log(`   Kepada: Pengguna ID ${user_id}`);
+        console.log(`   Booking ID: ${newBookingId}`);
+        console.log(`   Kamar ID: ${room_id}`);
+        console.log(`   Check-in: ${check_in_date}, Check-out: ${check_out_date}`);
+        console.log('============================================');
+        
+        res.status(201).json({ message: 'Pemesanan berhasil!' });
 
     } catch (error) {
         await connection.rollback();
