@@ -415,4 +415,18 @@ router.put('/bookings/:bookingId/cancel', isAuthenticated, async (req, res) => {
         connection.release();
     }
 });
+
+// --- ENDPOINT BARU UNTUK MENAMPILKAN KAMAR DI HALAMAN UTAMA ---
+router.get('/featured-rooms', async (req, res) => {
+    try {
+        // Mengambil 3 kamar terbaru yang ditambahkan untuk ditampilkan
+        const [rooms] = await db.query(
+            'SELECT id, name, type, price, image_url FROM rooms ORDER BY created_at DESC LIMIT 3'
+        );
+        res.json(rooms);
+    } catch (error) {
+        console.error("Error fetching featured rooms:", error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 module.exports = router;
