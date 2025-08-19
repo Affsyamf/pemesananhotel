@@ -61,9 +61,24 @@ function PrintBookingPage() {
                     .no-print {
                         display: none;
                     }
+                    .paid-stamp {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%) rotate(-30deg);
+                        font-size: 6rem;
+                        font-weight: bold;
+                        color: rgba(4, 120, 87, 0.15);
+                        border: 7px solid rgba(4, 120, 87, 0.15);
+                        padding: 0.5rem 2rem;
+                        border-radius: 1rem;
+                        z-index: 0;
+                        user-select: none;
+                    }
                 }
             `}</style>
             <div className="font-sans p-8 max-w-3xl mx-auto bg-white rounded-xl shadow-2xl print-container">
+                {booking.payment_status === 'paid' && <div className="paid-stamp">LUNAS</div>}
                 {/* Header */}
                 <div className="flex items-center justify-between border-b-2 border-gray-100 pb-6 mb-8">
                     <div className="flex items-center">

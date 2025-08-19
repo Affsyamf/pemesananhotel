@@ -82,6 +82,7 @@ function MyBookingsPage() {
                             <th className="th-style dark:text-gray-100">Tanggal Pesan</th>
                             <th className="th-style dark:text-gray-100">Check-in</th>
                             <th className="th-style dark:text-gray-100">Check-out</th>
+                            <th className="th-style dark:text-gray-100">Payment</th>
                             <th className="th-style dark:text-gray-100">Status</th>
                             <th className="th-style dark:text-gray-100">Aksi</th>
                         </tr>
@@ -94,6 +95,13 @@ function MyBookingsPage() {
                                 <td className="td-style dark:text-gray-300">{formatDate(booking.created_at)}</td>
                                 <td className="td-style dark:text-gray-300">{formatDate(booking.check_in_date)}</td>
                                 <td className="td-style dark:text-gray-300">{formatDate(booking.check_out_date)}</td>
+                                <td className="td-style">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    booking.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                    {booking.payment_status === 'paid' ? 'Lunas' : 'Belum Dibayar'}
+                                </span>
+                            </td>
                                 <td className="td-style">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {booking.status}

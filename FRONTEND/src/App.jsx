@@ -1,81 +1,88 @@
-// frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import ManageBookingsPage from './pages/ManageBookingsPage';
 
-// Halaman Admin
-import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
+// Layouts
+import UserLayout from './components/UserLayout';
+import AdminLayout from './components/admin/AdminLayout';
+
+// Komponen
+import ProtectedRoute from './components/ProtectedRoute';
+
 // Halaman Publik
-import DashboardPage from './pages/DashboardPage';
+import DashboardPage from './pages/DashboardPage'; // Asumsi ini halaman landing
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
-// Halaman & Komponen Terlindungi
-import ProtectedRoute from './components/ProtectedRoute';
-import UserLayout from './components/UserLayout';
+// Halaman Pengguna (User)
 import BookRoomPage from './pages/BookRoomPage';
 import MyBookingsPage from './pages/MyBookingsPage';
-import PrintBookingPage from './pages/PrintBookingPage'; 
-import AdminLayout from './components/admin/AdminLayout';
+import RoomDetailPage from './pages/RoomDetailPage';
+import UserProfilePage from './pages/UserProfilePage';
+
+// Halaman Admin
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import ManageUsersPage from './pages/ManageUsersPage';
 import ManageRoomsPage from './pages/ManageRoomsPage';
-import RoomDetailPage from './pages/RoomDetailPage';
 import ManageAvailabilityPage from './pages/ManageAvailabilityPage';
-import UserProfilePage from './pages/UserProfilePage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage'; 
-import ResetPasswordPage from './pages/ResetPasswordPage';   
+import ManageBookingsPage from './pages/ManageBookingsPage';
+import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
 
-
+// Halaman Proses (Pembayaran, Cetak, dll)
+import PaymentPage from './pages/PaymentPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PrintBookingPage from './pages/PrintBookingPage'; 
 
 function App() {
   return (
     <Router>
       <Toaster position="top-center" reverseOrder={false} />
       <Routes>
-        {/* Rute Publik */}
-        <Route path="/" element={<DashboardPage />} />
+        {/* --- RUTE PUBLIK --- */}
+        {/* Hapus <Route path="/" element={<DashboardPage />} /> jika landing page sama dengan login */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-        <Route path="/" element={<BookRoomPage />} /> {/* Atau path Anda untuk daftar kamar */}
-        <Route path="/rooms/:roomId" element={<RoomDetailPage />} /> {/* <-- Tambahkan rute ini */}
 
-        {/* --- RUTE USER YANG DIPERBARUI --- */}
-        <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['user']} />}>
-          <Route element={<UserLayout />}>
-            {/* INI KUNCINYA: Saat user ke /dashboard, langsung arahkan ke "book" */}
-            <Route index element={<Navigate to="book" replace />} />
-            <Route path="book" element={<BookRoomPage />} />
-            <Route path="my-bookings" element={<MyBookingsPage />} />
-            <Route path="profile" element={<UserProfilePage />} />
-            <Route path="rooms/:roomId" element={<RoomDetailPage />} />
-          </Route>
-        </Route>
-
-         {/* Rute Cetak terpisah untuk Admin */}
-        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin/print-booking/:bookingId" element={<AdminPrintBookingPage />} />
-        </Route>
-        
-        {/* Rute Cetak terpisah agar tidak ada navbar */}
+        {/* --- RUTE PENGGUNA (USER) --- */}
         <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-          <Route path="/print-booking/:bookingId" element={<PrintBookingPage />} />
+            {/* Rute yang menggunakan UserLayout (dengan sidebar) */}
+            <Route path="/dashboard" element={<UserLayout />}>
+              <Route index element={<Navigate to="book" replace />} />
+              <Route path="book" element={<BookRoomPage />} />
+              <Route path="my-bookings" element={<MyBookingsPage />} />
+              <Route path="profile" element={<UserProfilePage />} />
+              <Route path="rooms/:roomId" element={<RoomDetailPage />} />
+            </Route>
+            
+            {/* Rute yang TIDAK menggunakan UserLayout (halaman penuh) */}
+            <Route path="/pay/:bookingId" element={<PaymentPage />} />
+            <Route path="/payment-success/:bookingId" element={<PaymentSuccessPage />} />
+            <Route path="/print-booking/:bookingId" element={<PrintBookingPage />} />
         </Route>
 
-        {/* Rute Admin (tidak berubah) */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route element={<AdminLayout />}>
-             <Route index element={<AdminDashboardPage />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="users" element={<ManageUsersPage />} />
-            <Route path="rooms" element={<ManageRoomsPage />} />
-            <Route path="availability" element={<ManageAvailabilityPage />} />
-            <Route path="bookings" element={<ManageBookingsPage />} />
-          </Route>
+        {/* --- RUTE ADMIN --- */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            {/* Rute yang menggunakan AdminLayout (dengan sidebar) */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route path="users" element={<ManageUsersPage />} />
+              <Route path="rooms" element={<ManageRoomsPage />} />
+              <Route path="availability" element={<ManageAvailabilityPage />} />
+              <Route path="bookings" element={<ManageBookingsPage />} />
+            </Route>
+
+            {/* Rute yang TIDAK menggunakan AdminLayout (halaman penuh) */}
+            <Route path="/admin/print-booking/:bookingId" element={<AdminPrintBookingPage />} />
         </Route>
+
+        {/* Redirect Halaman Utama */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
       </Routes>
     </Router>
   );

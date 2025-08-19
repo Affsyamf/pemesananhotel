@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import UserRoomCard from '../components/UserRoomCard';
+import { useNavigate } from 'react-router-dom';
 import BookingModal from '../components/BookingModal';
 import RoomFilter from '../components/RoomFilter';
 import { Search } from 'lucide-react';
@@ -13,6 +14,7 @@ const formatDate = (date) => {
 };
 
 function BookRoomPage() {
+  const navigate = useNavigate();
     // State untuk menyimpan semua kamar yang *tersedia* berdasarkan tanggal
     const [availableRooms, setAvailableRooms] = useState([]); 
     const [loading, setLoading] = useState(false);
@@ -106,7 +108,7 @@ function BookRoomPage() {
         const toastId = toast.loading('Memproses pesanan...');
         const token = localStorage.getItem('token');
         try {
-            await axios.post('http://localhost:5001/api/public/bookings', 
+           const response = await axios.post('http://localhost:5001/api/public/bookings',
                 { 
                     ...data, 
                     room_id: selectedRoom.id, 
@@ -116,8 +118,9 @@ function BookRoomPage() {
                 }, 
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            toast.success('Pemesanan Anda berhasil!', { id: toastId });
+            toast.success('Pesanan dibuat, mengarahkan ke pembayaran...', { id: toastId });
             handleCloseModal();
+            navigate(`/pay/${response.data.bookingId}`);
             // Lakukan pencarian ulang untuk memperbarui daftar kamar
             handleAvailabilitySearch(); 
         } catch (error) {
