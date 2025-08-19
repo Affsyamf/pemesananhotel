@@ -85,32 +85,32 @@ function MyBookingsPage() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th className="th-style dark:text-gray-100">Pesanan Ke-#</th>
-                            <th className="th-style dark:text-gray-100">Nama Kamar</th>
-                            <th className="th-style dark:text-gray-100">Tanggal Pesan</th>
-                            <th className="th-style dark:text-gray-100">Check-in</th>
-                            <th className="th-style dark:text-gray-100">Check-out</th>
-                            <th className="th-style dark:text-gray-100">Pembayaran</th>
-                            <th className="th-style dark:text-gray-100">Status Pesanan</th>
-                            <th className="th-style dark:text-gray-100">Aksi</th>
+                            <th className="th-style dark:text-gray-100 text-center">Pesanan Ke-#</th>
+                            <th className="th-style dark:text-gray-100 text-center">Nama Kamar</th>
+                            <th className="th-style dark:text-gray-100 text-center">Tanggal Pesan</th>
+                            <th className="th-style dark:text-gray-100 text-center">Check-in</th>
+                            <th className="th-style dark:text-gray-100 text-center">Check-out</th>
+                            <th className="th-style dark:text-gray-100 text-center">Pembayaran</th>
+                            <th className="th-style dark:text-gray-100 text-center">Status Pesanan</th>
+                            <th className="th-style dark:text-gray-100 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {pageData.data.map(booking => (
                             <tr key={booking.id}>
-                                <td className="td-style font-mono dark:text-gray-300">#{booking.user_booking_sequence}</td>
-                                <td className="td-style font-semibold text-gray-800 dark:text-gray-200">{booking.room_name}</td>
-                                <td className="td-style dark:text-gray-300">{formatDate(booking.created_at)}</td>
-                                <td className="td-style dark:text-gray-300">{formatDate(booking.check_in_date)}</td>
-                                <td className="td-style dark:text-gray-300">{formatDate(booking.check_out_date)}</td>
-                                <td className="td-style">
+                                <td className="td-style font-mono dark:text-white">#{booking.user_booking_sequence}</td>
+                                <td className="td-style font-semibold text-gray-800 dark:text-gray-200 text-center">{booking.room_name}</td>
+                                <td className="td-style dark:text-white text-center">{formatDate(booking.created_at)}</td>
+                                <td className="td-style dark:text-white text-center">{formatDate(booking.check_in_date)}</td>
+                                <td className="td-style dark:text-white text-center">{formatDate(booking.check_out_date)}</td>
+                                <td className="td-style text-center">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                         booking.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                                     }`}>
                                         {booking.payment_status === 'paid' ? 'Lunas' : 'Belum Dibayar'}
                                     </span>
                                 </td>
-                                <td className="td-style">
+                                <td className="td-style text-center">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
                                         booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                         booking.status === 'cancelled' || booking.status === 'rejected' ? 'bg-red-100 text-red-800' :
