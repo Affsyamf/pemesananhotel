@@ -85,7 +85,7 @@ function MyBookingsPage() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th className="th-style dark:text-gray-100 text-center">Pesanan Ke-#</th>
+                            <th className="th-style dark:text-gray-100 text-center">Pesanan Ke-</th>
                             <th className="th-style dark:text-gray-100 text-center">Nama Kamar</th>
                             <th className="th-style dark:text-gray-100 text-center">Tanggal Pesan</th>
                             <th className="th-style dark:text-gray-100 text-center">Check-in</th>
@@ -98,7 +98,7 @@ function MyBookingsPage() {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {pageData.data.map(booking => (
                             <tr key={booking.id}>
-                                <td className="td-style font-mono dark:text-white">#{booking.user_booking_sequence}</td>
+                                <td className="td-style font-mono dark:text-white text-center">#{booking.user_booking_sequence}</td>
                                 <td className="td-style font-semibold text-gray-800 dark:text-gray-200 text-center">{booking.room_name}</td>
                                 <td className="td-style dark:text-white text-center">{formatDate(booking.created_at)}</td>
                                 <td className="td-style dark:text-white text-center">{formatDate(booking.check_in_date)}</td>

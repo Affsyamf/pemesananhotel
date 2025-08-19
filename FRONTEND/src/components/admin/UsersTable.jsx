@@ -12,7 +12,7 @@ function UsersTable({ data, onEdit, onDelete }) {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 justify-center">
           <button onClick={() => onEdit(row.original)} className="p-1 text-blue-600 hover:text-blue-800">
             <Pencil size={18} />
           </button>
@@ -37,7 +37,7 @@ function UsersTable({ data, onEdit, onDelete }) {
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => (
-                <th key={header.id} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th key={header.id} className="px-6 py-3 text-xs text-center font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
               ))}
@@ -48,7 +48,7 @@ function UsersTable({ data, onEdit, onDelete }) {
           {table.getRowModel().rows.map(row => (
             <tr key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
               {row.getVisibleCells().map(cell => (
-                <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                <td key={cell.id} className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
