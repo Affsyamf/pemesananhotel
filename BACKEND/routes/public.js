@@ -190,35 +190,65 @@ router.get('/rooms/:roomId/can-review', isAuthenticated, async (req, res) => {
 // --- MODIFIKASI ENDPOINT PEMESANAN ---
 router.post('/bookings', isAuthenticated, async (req, res) => {
     const { room_id, guest_name, guest_address, check_in_date, check_out_date } = req.body;
-    const user_id = req.user.id;
+    const userId = req.user.id;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
         
-        // ... (logika validasi ketersediaan yang sudah ada) ...
-        const [roomDetails] = await connection.query('SELECT price FROM rooms WHERE id = ?', [room_id]);
+        // 1. Ambil detail kamar, termasuk harga, untuk menghitung total
+        const [roomDetails] = await connection.query('SELECT price FROM rooms WHERE id = ? FOR UPDATE', [room_id]);
+        if (roomDetails.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Kamar tidak ditemukan.' });
+        }
         const roomPrice = roomDetails[0].price;
+
+        // 2. Lakukan validasi ketersediaan (logika ini sudah benar)
+        const checkAvailabilitySql = `
+            SELECT date, available_quantity FROM room_availability
+            WHERE room_id = ? AND date >= ? AND date < ? AND is_active = TRUE
+            FOR UPDATE;
+        `;
+        const [availability] = await connection.query(checkAvailabilitySql, [room_id, check_in_date, check_out_date]);
         const numberOfNights = (new Date(check_out_date) - new Date(check_in_date)) / (1000 * 60 * 60 * 24);
+
+        if (availability.length !== numberOfNights || availability.some(day => day.available_quantity <= 0)) {
+            await connection.rollback();
+            return res.status(400).json({ message: 'Kamar tidak tersedia pada sebagian atau seluruh tanggal yang dipilih.' });
+        }
+        
+        // 3. Hitung total harga
         const totalPrice = roomPrice * numberOfNights;
 
-        // Masukkan data pemesanan dengan status default 'awaiting_payment'
+        // 4. Masukkan data pemesanan dengan total harga yang benar
         const [insertResult] = await connection.query(
             'INSERT INTO bookings (user_id, room_id, guest_name, guest_address, total_price, check_in_date, check_out_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [user_id, room_id, guest_name, guest_address, totalPrice, check_in_date, check_out_date]
+            [userId, room_id, guest_name, guest_address, totalPrice, check_in_date, check_out_date]
         );
         const newBookingId = insertResult.insertId;
         
         await connection.commit();
+
+        // --- SIMULASI PENGIRIMAN EMAIL KONFIRMASI (Tampil di Console Backend) ---
+        console.log('============================================');
+        console.log('📧 SIMULASI: Mengirim Email Konfirmasi...');
+        console.log(`   Kepada: Pengguna ID ${userId}`); 
+        console.log(`   Booking ID: ${newBookingId}`);
+        console.log(`   Kamar ID: ${room_id}`);
+        console.log(`   Total Harga: ${totalPrice}`);
+        console.log(`   Check-in: ${check_in_date}, Check-out: ${check_out_date}`);
+        console.log('============================================');
         
-        // Kirim kembali ID booking agar frontend bisa redirect ke halaman pembayaran
         res.status(201).json({ 
             message: 'Pesanan dibuat, menunggu pembayaran.',
             bookingId: newBookingId 
         });
 
     } catch (error) {
-        // ... (error handling) ...
+        await connection.rollback();
+        console.error("Error saat membuat booking:", error);
+        res.status(500).json({ message: 'Terjadi kesalahan saat memproses pemesanan' });
     } finally {
         connection.release();
     }
@@ -270,19 +300,33 @@ router.post('/bookings/:bookingId/pay', isAuthenticated, async (req, res) => {
 router.get('/my-bookings', isAuthenticated, async (req, res) => {
     try {
         const userId = req.user.id;
-        // Menggunakan window function ROW_NUMBER() untuk membuat nomor urut per pengguna
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+
+        // Query untuk mengambil data per halaman
         const [bookings] = await db.query(
             `SELECT 
-                b.id, b.check_in_date, b.check_out_date, b.created_at, b.status,
+                b.id, b.check_in_date, b.check_out_date, b.created_at, b.status, b.payment_status,
                 r.name AS room_name, r.price, r.image_url,
                 (SELECT COUNT(*) FROM bookings b2 WHERE b2.user_id = b.user_id AND b2.created_at <= b.created_at) as user_booking_sequence
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
             WHERE b.user_id = ?
-            ORDER BY b.created_at DESC`,
-            [userId]
+            ORDER BY b.created_at DESC
+            LIMIT ? OFFSET ?`,
+            [userId, limit, offset]
         );
-        res.json(bookings);
+
+        // Query untuk menghitung total pesanan pengguna
+        const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM bookings WHERE user_id = ?', [userId]);
+        
+        // Kirim respon dalam format paginasi
+        res.json({
+            data: bookings,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });

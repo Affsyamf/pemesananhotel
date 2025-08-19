@@ -349,4 +349,49 @@ router.put('/bookings/:id/confirm', async (req, res) => {
     }
 });
 
+router.put('/bookings/:id/reject', async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. Dapatkan detail booking yang akan ditolak
+        const [bookings] = await connection.query(
+            "SELECT * FROM bookings WHERE id = ? AND status = 'pending' FOR UPDATE",
+            [id]
+        );
+
+        if (bookings.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau statusnya bukan pending.' });
+        }
+        const booking = bookings[0];
+
+        // 2. Ubah status booking menjadi 'rejected' dan tandai sebagai tidak baru lagi
+        await connection.query(
+            "UPDATE bookings SET status = 'rejected', is_new = FALSE WHERE id = ?",
+            [id]
+        );
+
+        // 3. Kembalikan stok kamar untuk setiap hari dalam rentang tanggal pesanan
+        const restoreStockSql = `
+            UPDATE room_availability 
+            SET available_quantity = available_quantity + 1 
+            WHERE room_id = ? AND date >= ? AND date < ?;
+        `;
+        await connection.query(restoreStockSql, [booking.room_id, booking.check_in_date, booking.check_out_date]);
+
+        await connection.commit();
+        res.json({ message: 'Pesanan berhasil ditolak.' });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Server Error saat menolak pesanan.' });
+    } finally {
+        connection.release();
+    }
+});
+
 module.exports = router;

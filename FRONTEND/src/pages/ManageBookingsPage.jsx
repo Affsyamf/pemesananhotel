@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Trash2, CheckCircle } from 'lucide-react';
+import { Trash2, CheckCircle, XCircle } from 'lucide-react';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
 import Pagination from '../components/admin/Pagination'; // <-- Import komponen paginasi
 
@@ -17,20 +17,8 @@ function ManageBookingsPage() {
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    const handleApproveBooking = async (bookingId) => {
-        const toastId = toast.loading('Menyetujui pesanan...');
-        try {
-            const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5001/api/admin/bookings/${bookingId}/confirm`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success('Pesanan berhasil disetujui.', { id: toastId });
-            fetchBookings(currentPage); // Refresh data untuk melihat status baru
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Gagal menyetujui pesanan.', { id: toastId });
-        }
-    };
-
+    const [bookingToReject, setBookingToReject] = useState(null);
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const fetchBookings = useCallback(async (page) => {
         setLoading(true);
         try {
@@ -52,8 +40,49 @@ function ManageBookingsPage() {
         fetchBookings(currentPage); 
     }, [currentPage, fetchBookings]);
 
-    const handlePageChange = (page) => {
+      const handlePageChange = (page) => {
         setCurrentPage(page);
+    };
+
+     // --- FUNGSI UNTUK MENYETUJUI PESANAN ---
+    const handleApproveBooking = async (bookingId) => {
+        const toastId = toast.loading('Menyetujui pesanan...');
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`http://localhost:5001/api/admin/bookings/${bookingId}/confirm`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success('Pesanan berhasil disetujui.', { id: toastId });
+            fetchBookings(currentPage); // Refresh data untuk melihat status baru
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Gagal menyetujui pesanan.', { id: toastId });
+        }
+    };
+
+    const openRejectModal = (booking) => {
+        setBookingToReject(booking);
+        setIsRejectModalOpen(true);
+    };
+
+    const closeRejectModal = () => {
+        setBookingToReject(null);
+        setIsRejectModalOpen(false);
+    };
+
+    const confirmReject = async () => {
+        if (!bookingToReject) return;
+        const toastId = toast.loading('Menolak pesanan...');
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`http://localhost:5001/api/admin/bookings/${bookingToReject.id}/reject`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success('Pesanan berhasil ditolak.', { id: toastId });
+            fetchBookings(currentPage); // Refresh data
+            closeRejectModal();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Gagal menolak pesanan.', { id: toastId });
+        }
     };
 
     const openDeleteModal = (booking) => {
@@ -117,7 +146,11 @@ function ManageBookingsPage() {
                                         <td className="td-style dark:text-white">{formatDate(booking.check_in_date)}</td>
                                         <td className="td-style dark:text-white">{formatDate(booking.check_out_date)}</td>
                                         <td className="td-style dark:text-white">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                booking.status === 'cancelled' || booking.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }`}>
                                                 {booking.status}
                                             </span>
                                         </td>
@@ -125,9 +158,14 @@ function ManageBookingsPage() {
                                             <div className="flex items-center space-x-2">
                                                 {/* --- TOMBOL AKSI KONDISIONAL --- */}
                                                 {booking.status === 'pending' && (
+                                                  <>
                                                     <button onClick={() => handleApproveBooking(booking.id)} className="text-green-600 hover:text-green-800" title="Setujui Pesanan">
                                                         <CheckCircle size={18} />
                                                     </button>
+                                                    <button onClick={() => openRejectModal(booking)} className="text-yellow-600 hover:text-yellow-800" title="Tolak Pesanan">
+                                                            <XCircle size={18} />
+                                                        </button>
+                                                  </>
                                                 )}
                                                 <button onClick={() => openDeleteModal(booking)} className="text-red-600 hover:text-red-800" title="Hapus Pesanan">
                                                     <Trash2 size={18} />
@@ -147,6 +185,14 @@ function ManageBookingsPage() {
                     onPageChange={handlePageChange}
                 />
             </div>
+            
+             <ConfirmationModal
+                isOpen={isRejectModalOpen}
+                onClose={closeRejectModal}
+                onConfirm={confirmReject}
+                title="Tolak Pesanan"
+                message={`Anda yakin ingin menolak pesanan #${bookingToReject?.id} untuk kamar "${bookingToReject?.room_name}"? Stok kamar akan dikembalikan.`}
+            />
 
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}

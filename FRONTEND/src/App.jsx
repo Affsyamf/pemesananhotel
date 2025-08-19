@@ -42,6 +42,7 @@ function App() {
       <Routes>
         {/* --- RUTE PUBLIK --- */}
         {/* Hapus <Route path="/" element={<DashboardPage />} /> jika landing page sama dengan login */}
+        <Route path="/" element={<DashboardPage />} /> 
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
