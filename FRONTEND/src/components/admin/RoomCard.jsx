@@ -1,8 +1,8 @@
 // frontend/src/components/admin/RoomCard.jsx
 import React from 'react';
-import { Pencil, Trash2, BedDouble, DollarSign, Package } from 'lucide-react';
+import { Pencil, Trash2, BedDouble, DollarSign, Package, Image } from 'lucide-react';
 
-function RoomCard({ room, onEdit, onDelete }) {
+function RoomCard({ room, onEdit, onDelete, onGallery }) {
   // Format harga menjadi format Rupiah
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -36,11 +36,14 @@ function RoomCard({ room, onEdit, onDelete }) {
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-2">
-          <button onClick={() => onEdit(room)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-full">
+         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-2">
+          <button onClick={() => onGallery(room)} className="p-2 text-purple-600 hover:bg-purple-100 dark:hover:bg-gray-700 rounded-full" title="Kelola Galeri">
+            <Image size={18} />
+          </button>
+          <button onClick={() => onEdit(room)} className="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-gray-700 rounded-full" title="Edit Kamar">
             <Pencil size={18} />
           </button>
-          <button onClick={() => onDelete(room)} className="p-2 text-red-600 hover:bg-red-100 rounded-full">
+          <button onClick={() => onDelete(room)} className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-gray-700 rounded-full" title="Hapus Kamar">
             <Trash2 size={18} />
           </button>
         </div>

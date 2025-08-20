@@ -6,6 +6,7 @@ import RoomCard from '../components/admin/RoomCard';
 import RoomFormModal from '../components/admin/RoomFormModal';
 import AdminRoomFilter from '../components/admin/AdminRoomFilter';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
+import GalleryModal from '../components/admin/GalleryModal';
 
 function ManageRoomsPage() {
   const [allRooms, setAllRooms] = useState([]);
@@ -16,13 +17,19 @@ function ManageRoomsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState(null);
 
+  // State untuk modal galeri
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [selectedRoomForGallery, setSelectedRoomForGallery] = useState(null);
+
+
   const fetchRooms = useCallback(async () => {
+   setLoading(true);
     try {
-      setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5001/api/admin/rooms', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // PERBAIKAN 1: Gunakan setAllRooms yang benar
       setAllRooms(response.data);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal mengambil data kamar');
@@ -59,6 +66,17 @@ function ManageRoomsPage() {
   const handleCloseFormModal = () => {
     setIsFormModalOpen(false);
     setEditingRoom(null);
+  };
+
+  // --- Handler untuk Modal Galeri ---
+  const handleOpenGalleryModal = (room) => {
+      setSelectedRoomForGallery(room);
+      setIsGalleryModalOpen(true);
+  };
+
+  const handleCloseGalleryModal = () => {
+      setIsGalleryModalOpen(false);
+      setSelectedRoomForGallery(null);
   };
 
   const handleFormSubmit = async (data) => {
@@ -136,7 +154,9 @@ function ManageRoomsPage() {
                   key={room.id} 
                   room={room} 
                   onEdit={handleOpenFormModal} 
-                  onDelete={openDeleteModal} 
+                  onDelete={openDeleteModal}
+                  // PERBAIKAN 2: Hubungkan handler galeri
+                  onGallery={handleOpenGalleryModal}
                 />
               ))}
             </div>
@@ -162,6 +182,12 @@ function ManageRoomsPage() {
         onConfirm={confirmDelete}
         title="Hapus Kamar"
         message={`Apakah Anda yakin ingin menghapus kamar "${roomToDelete?.name}"? Aksi ini akan menghapus data kamar secara permanen.`}
+      />
+
+      <GalleryModal
+          isOpen={isGalleryModalOpen}
+          onClose={handleCloseGalleryModal}
+          room={selectedRoomForGallery}
       />
     </div>
   );

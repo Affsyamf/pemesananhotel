@@ -60,11 +60,18 @@ router.delete('/users/:id', async (req, res) => {
 // GET all rooms
 router.get('/rooms', async (req, res) => {
     try {
-        // Secara eksplisit pilih semua kolom yang dibutuhkan
-        const [rooms] = await db.query('SELECT id, name, type, price, quantity, facilities, description, image_url, created_at FROM rooms ORDER BY created_at DESC');
+        // Query ini sekarang mengambil satu gambar dari tabel room_images sebagai gambar utama
+        const sql = `
+            SELECT 
+                r.*, 
+                (SELECT ri.image_url FROM room_images ri WHERE ri.room_id = r.id ORDER BY ri.id ASC LIMIT 1) as image_url
+            FROM rooms r
+            ORDER BY r.created_at DESC;
+        `;
+        const [rooms] = await db.query(sql);
         res.json(rooms);
     } catch (error) {
-        console.error(error); // Tambahkan ini untuk melihat error backend di terminal
+        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -391,6 +398,49 @@ router.put('/bookings/:id/reject', async (req, res) => {
         res.status(500).json({ message: 'Server Error saat menolak pesanan.' });
     } finally {
         connection.release();
+    }
+});
+
+
+// GET semua gambar untuk satu kamar
+router.get('/rooms/:roomId/images', async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const [images] = await db.query('SELECT * FROM room_images WHERE room_id = ? ORDER BY id ASC', [roomId]);
+        res.json(images);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// POST (menambahkan) gambar baru ke kamar
+router.post('/rooms/:roomId/images', async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const { image_url, alt_text } = req.body;
+
+        if (!image_url) {
+            return res.status(400).json({ message: 'URL gambar diperlukan' });
+        }
+
+        await db.query(
+            'INSERT INTO room_images (room_id, image_url, alt_text) VALUES (?, ?, ?)',
+            [roomId, image_url, alt_text || 'Gambar kamar']
+        );
+        res.status(201).json({ message: 'Gambar berhasil ditambahkan' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// DELETE satu gambar spesifik
+router.delete('/images/:imageId', async (req, res) => {
+    try {
+        const { imageId } = req.params;
+        await db.query('DELETE FROM room_images WHERE id = ?', [imageId]);
+        res.json({ message: 'Gambar berhasil dihapus' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 

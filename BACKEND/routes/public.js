@@ -46,11 +46,20 @@ router.get('/rooms', async (req, res) => {
 router.get('/rooms/:id', async (req, res) => {
     try {
         const { id } = req.params;
+        // 1. Ambil detail kamar utama
         const [rooms] = await db.query('SELECT * FROM rooms WHERE id = ?', [id]);
         if (rooms.length === 0) {
             return res.status(404).json({ message: 'Kamar tidak ditemukan' });
         }
-        res.json(rooms[0]);
+        const roomData = rooms[0];
+
+        // 2. Ambil semua gambar dari tabel room_images
+        const [images] = await db.query('SELECT id, image_url FROM room_images WHERE room_id = ? ORDER BY id ASC', [id]);
+        
+        // 3. Gabungkan gambar ke dalam data kamar
+        roomData.images = images;
+
+        res.json(roomData);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
@@ -419,14 +428,24 @@ router.put('/bookings/:bookingId/cancel', isAuthenticated, async (req, res) => {
 // --- ENDPOINT BARU UNTUK MENAMPILKAN KAMAR DI HALAMAN UTAMA ---
 router.get('/featured-rooms', async (req, res) => {
     try {
-        // Mengambil 3 kamar terbaru yang ditambahkan untuk ditampilkan
-        const [rooms] = await db.query(
-            'SELECT id, name, type, price, image_url FROM rooms ORDER BY created_at DESC LIMIT 3'
-        );
+        // Query ini sekarang mengambil satu gambar dari tabel room_images sebagai gambar utama
+        const sql = `
+            SELECT 
+                r.id, r.name, r.type, r.price,
+                (SELECT ri.image_url FROM room_images ri WHERE ri.room_id = r.id ORDER BY ri.id ASC LIMIT 1) as image_url
+            FROM rooms r 
+            ORDER BY r.created_at DESC 
+            LIMIT 3;
+        `;
+        const [rooms] = await db.query(sql);
         res.json(rooms);
     } catch (error) {
         console.error("Error fetching featured rooms:", error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
+
+
+
+
 module.exports = router;
