@@ -122,14 +122,14 @@ function ManageBookingsPage() {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th className="th-style dark:text-white">ID</th>
-                                <th className="th-style dark:text-white">Nama Kamar</th>
-                                <th className="th-style dark:text-white">Pemesan</th>
-                                <th className="th-style dark:text-white">Tanggal Pesan</th>
-                                <th className="th-style dark:text-white">Check-in</th>
-                                <th className="th-style dark:text-white">Check-out</th>
-                                <th className="th-style dark:text-white">Status</th>
-                                <th className="th-style dark:text-white">Aksi</th>
+                                <th className="th-style text-center dark:text-white">ID</th>
+                                <th className="th-style text-center dark:text-white">Nama Kamar</th>
+                                <th className="th-style text-center dark:text-white">Pemesan</th>
+                                <th className="th-style text-center dark:text-white">Tanggal Pesan</th>
+                                <th className="th-style text-center dark:text-white">Check-in</th>
+                                <th className="th-style text-center dark:text-white">Check-out</th>
+                                <th className="th-style text-center dark:text-white">Status</th>
+                                <th className="th-style text-center dark:text-white">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -139,13 +139,13 @@ function ManageBookingsPage() {
                                 // PERBAIKAN 4: Gunakan pageData.data untuk me-render
                                 pageData.data.map(booking => (
                                     <tr key={booking.id}>
-                                        <td className="td-style dark:text-white font-mono">#{booking.id}</td>
-                                        <td className="td-style dark:text-white font-semibold">{booking.room_name}</td>
-                                        <td className="td-style dark:text-white">{booking.user_username}</td>
-                                        <td className="td-style dark:text-white">{formatDate(booking.created_at)}</td>
-                                        <td className="td-style dark:text-white">{formatDate(booking.check_in_date)}</td>
-                                        <td className="td-style dark:text-white">{formatDate(booking.check_out_date)}</td>
-                                        <td className="td-style dark:text-white">
+                                        <td className="td-style text-center dark:text-white font-mono">#{booking.id}</td>
+                                        <td className="td-style text-center dark:text-white font-semibold">{booking.room_name}</td>
+                                        <td className="td-style text-center dark:text-white">{booking.user_username}</td>
+                                        <td className="td-style text-center dark:text-white">{formatDate(booking.created_at)}</td>
+                                        <td className="td-style text-center dark:text-white">{formatDate(booking.check_in_date)}</td>
+                                        <td className="td-style text-center dark:text-white">{formatDate(booking.check_out_date)}</td>
+                                        <td className="td-style text-center dark:text-white">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                                 booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                                                 booking.status === 'cancelled' || booking.status === 'rejected' ? 'bg-red-100 text-red-800' :

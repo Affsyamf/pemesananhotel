@@ -444,4 +444,65 @@ router.delete('/images/:imageId', async (req, res) => {
     }
 });
 
+
+// GET (Read) semua kode promo
+router.get('/promos', async (req, res) => {
+    try {
+        const [promos] = await db.query('SELECT * FROM promos ORDER BY created_at DESC');
+        res.json(promos);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// POST (Create) kode promo baru
+router.post('/promos', async (req, res) => {
+    const { code, discount_percentage, expiry_date } = req.body;
+    if (!code || !discount_percentage || !expiry_date) {
+        return res.status(400).json({ message: 'Semua field diperlukan.' });
+    }
+    try {
+        await db.query(
+            'INSERT INTO promos (code, discount_percentage, expiry_date) VALUES (?, ?, ?)',
+            [code.toUpperCase(), discount_percentage, expiry_date]
+        );
+        res.status(201).json({ message: 'Kode promo berhasil dibuat.' });
+    } catch (error) {
+        // Tangani error jika kode sudah ada (karena UNIQUE constraint)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Kode promo ini sudah ada.' });
+        }
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
+// PUT (Update) kode promo
+router.put('/promos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { discount_percentage, expiry_date, is_active } = req.body;
+    try {
+        await db.query(
+            'UPDATE promos SET discount_percentage = ?, expiry_date = ?, is_active = ? WHERE id = ?',
+            [discount_percentage, expiry_date, is_active, id]
+        );
+        res.json({ message: 'Kode promo berhasil diperbarui.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
+// DELETE kode promo
+router.delete('/promos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM promos WHERE id = ?', [id]);
+        res.json({ message: 'Kode promo berhasil dihapus.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
 module.exports = router;

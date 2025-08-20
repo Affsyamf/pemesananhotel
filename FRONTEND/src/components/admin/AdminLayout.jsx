@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'; // <-- PERBAIKAN: Tambahkan useEffect
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Hotel, ListChecks, LogOut, Menu, Users, CalendarDays, LayoutDashboard } from 'lucide-react';
+import { Hotel, ListChecks, LogOut, Menu, Users, CalendarDays, LayoutDashboard, Tag } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 import axios from 'axios'; // <-- PERBAIKAN: Tambahkan import axios
 
@@ -86,6 +86,7 @@ function AdminLayout() {
           <SidebarLink to="/admin/users" icon={<Users className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Pengguna</SidebarLink>
           <SidebarLink to="/admin/rooms" icon={<Hotel className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Kamar</SidebarLink>
           <SidebarLink to="/admin/availability" icon={<CalendarDays className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Inventaris</SidebarLink>
+          <SidebarLink to="/admin/promos" icon={<Tag className="w-5 h-5" />}>Kelola Promo</SidebarLink>
           <SidebarLink 
             to="/admin/bookings" 
             icon={<ListChecks className="w-5 h-5" />} 

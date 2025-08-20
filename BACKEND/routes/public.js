@@ -446,6 +446,38 @@ router.get('/featured-rooms', async (req, res) => {
 });
 
 
+// --- API BARU UNTUK MEMVERIFIKASI KODE PROMO ---
+router.post('/promos/verify', async (req, res) => {
+    const { code } = req.body;
+    if (!code) {
+        return res.status(400).json({ message: 'Kode promo diperlukan.' });
+    }
+
+    try {
+        // Cari promo yang aktif dan belum kadaluarsa
+        const [promos] = await db.query(
+            'SELECT * FROM promos WHERE code = ? AND is_active = TRUE AND expiry_date >= CURDATE()',
+            [code.toUpperCase()]
+        );
+
+        if (promos.length === 0) {
+            return res.status(404).json({ message: 'Kode promo tidak valid atau sudah kadaluarsa.' });
+        }
+
+        const promo = promos[0];
+        
+        // Kirim detail promo yang valid ke frontend
+        res.json({
+            message: 'Kode promo berhasil diterapkan!',
+            discountPercentage: promo.discount_percentage
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
 
 
 module.exports = router;
