@@ -266,45 +266,65 @@ router.post('/bookings', isAuthenticated, async (req, res) => {
 // Endpoint untuk mengelola pembayaran pesanan
 router.post('/bookings/:bookingId/pay', isAuthenticated, async (req, res) => {
     const { bookingId } = req.params;
+    const { promoCode } = req.body; // <-- Menerima kode promo dari frontend
     const userId = req.user.id;
+    const connection = await db.getConnection();
 
     try {
-        // Buat ID pembayaran acak untuk simulasi
-        const paymentId = `pay_sim_${require('crypto').randomBytes(12).toString('hex')}`;
+        await connection.beginTransaction();
 
-        // Update status pesanan dan pembayaran
-        const [result] = await db.query(
-            `UPDATE bookings SET 
-                payment_status = 'paid', 
-                status = 'pending', 
-                payment_id = ?,
-                is_new = TRUE
-             WHERE id = ? AND user_id = ? AND payment_status = 'unpaid'`,
-            [paymentId, bookingId, userId]
-        );
-
-        if (result.affectedRows === 0) {
+        const [bookings] = await connection.query("SELECT * FROM bookings WHERE id = ? AND user_id = ? AND payment_status = 'unpaid'", [bookingId, userId]);
+        if (bookings.length === 0) {
+            await connection.rollback();
             return res.status(404).json({ message: 'Pesanan tidak ditemukan atau sudah dibayar.' });
         }
+        const booking = bookings[0];
+        let finalPrice = booking.total_price;
+        let promoCodeUsed = null;
 
-        // Kurangi stok kamar HANYA SETELAH pembayaran berhasil
-        const [booking] = await db.query('SELECT * FROM bookings WHERE id = ?', [bookingId]);
-        const { room_id, check_in_date, check_out_date } = booking[0];
-        await db.query(
-            `UPDATE room_availability 
-             SET available_quantity = available_quantity - 1 
-             WHERE room_id = ? AND date >= ? AND date < ?`,
-            [room_id, check_in_date, check_out_date]
+        // Jika ada kode promo, validasi ulang dan hitung diskon
+        if (promoCode) {
+            const [promos] = await connection.query(
+                'SELECT * FROM promos WHERE code = ? AND is_active = TRUE AND expiry_date >= CURDATE()',
+                [promoCode]
+            );
+            if (promos.length > 0) {
+                const promo = promos[0];
+                const discountAmount = (booking.total_price * promo.discount_percentage) / 100;
+                finalPrice = booking.total_price - discountAmount;
+                promoCodeUsed = promo.code;
+            }
+        }
+
+        const paymentId = `pay_sim_${require('crypto').randomBytes(12).toString('hex')}`;
+
+        // Update status dan simpan harga akhir serta kode promo
+        await connection.query(
+            `UPDATE bookings SET 
+                payment_status = 'paid', status = 'pending', payment_id = ?,
+                final_price = ?, promo_code_used = ?, is_new = TRUE
+             WHERE id = ?`,
+            [paymentId, finalPrice, promoCodeUsed, bookingId]
         );
 
+        // Kurangi stok kamar
+        await connection.query(
+            `UPDATE room_availability SET available_quantity = available_quantity - 1 
+             WHERE room_id = ? AND date >= ? AND date < ?`,
+            [booking.room_id, booking.check_in_date, booking.check_out_date]
+        );
+
+        await connection.commit();
         res.json({ message: 'Pembayaran berhasil!' });
 
     } catch (error) {
+        await connection.rollback();
         console.error(error);
         res.status(500).json({ message: 'Server error saat proses pembayaran.' });
+    } finally {
+        connection.release();
     }
 });
-
 // Endpoint untuk user mengambil riwayat pesanannya sendiri
 router.get('/my-bookings', isAuthenticated, async (req, res) => {
     try {

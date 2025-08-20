@@ -64,15 +64,16 @@ function PaymentPage() {
         const toastId = toast.loading('Memproses pembayaran...');
         const token = localStorage.getItem('token');
         try {
-            await axios.post(`http://localhost:5001/api/public/bookings/${bookingId}/pay`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success('Pembayaran berhasil!', { id: toastId });
-            navigate(`/payment-success/${bookingId}`); // Arahkan ke halaman sukses
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Pembayaran gagal.', { id: toastId });
-            setPaying(false);
-        }
+             await axios.post(`http://localhost:5001/api/public/bookings/${bookingId}/pay`, 
+            { promoCode: discount > 0 ? promoCode : null }, // Hanya kirim jika ada diskon
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success('Pembayaran berhasil!', { id: toastId });
+        navigate(`/payment-success/${bookingId}`);
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Pembayaran gagal.', { id: toastId });
+        setPaying(false);
+    }
     };
 
     if (loading) return <div className="flex justify-center items-center min-h-screen"><Loader className="animate-spin" /></div>;
