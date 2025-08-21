@@ -31,6 +31,8 @@ import ManageBookingsPage from './pages/ManageBookingsPage';
 import ManagePromosPage from './pages/ManagePromosPage';
 import ReportsPage from './pages/ReportsPage';
 import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
+import PrintReportPage from './pages/PrintReportPage';
+
 
 // Halaman Proses (Pembayaran, Cetak, dll)
 import PaymentPage from './pages/PaymentPage';
@@ -83,6 +85,7 @@ function App() {
 
             {/* Rute yang TIDAK menggunakan AdminLayout (halaman penuh) */}
             <Route path="/admin/print-booking/:bookingId" element={<AdminPrintBookingPage />} />
+            <Route path="/admin/print-report" element={<PrintReportPage />} />
         </Route>
 
         {/* Redirect Halaman Utama */}

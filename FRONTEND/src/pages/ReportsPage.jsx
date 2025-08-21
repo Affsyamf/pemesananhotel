@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { BarChart, DollarSign, ListChecks, Search } from 'lucide-react';
-
+import { BarChart, DollarSign, ListChecks, Search, Printer } from 'lucide-react';
+import { Link } from 'react-router-dom';
 // Fungsi untuk format tanggal ke YYYY-MM-DD
 const formatDate = (date) => new Date(date).toISOString().split('T')[0];
 
@@ -55,7 +55,17 @@ function ReportsPage() {
     return (
         <div className="container mx-auto p-6 md:p-10">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-8">Laporan Performa</h1>
-
+                <Link 
+                    to="/admin/print-report" 
+                    state={{ reportData, dates }} // Kirim data ke halaman cetak
+                    className={`btn-secondary flex items-center ${!reportData ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={(e) => !reportData && e.preventDefault()} // Mencegah navigasi jika tidak ada data
+                    aria-disabled={!reportData}
+                    tabIndex={!reportData ? -1 : undefined}
+                >
+                    <Printer size={18} className="mr-2" />
+                    Cetak Laporan
+                </Link>
             {/* Kontrol Filter Tanggal */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-8 flex flex-col md:flex-row items-center gap-4">
                 <div className="flex-1 w-full">

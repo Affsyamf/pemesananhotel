@@ -277,20 +277,22 @@ router.put('/availability', async (req, res) => {
 // --- API UNTUK DASHBOARD STATISTIK (FITUR BARU) ---
 router.get('/stats', async (req, res) => {
     try {
-        // ... (query untuk totalUsers dan totalBookings tidak berubah) ...
+        // 1. Hitung total pengguna (tidak berubah)
         const [usersResult] = await db.query("SELECT COUNT(*) as totalUsers FROM users WHERE role = 'user'");
+        
+        // 2. Hitung total pesanan terkonfirmasi (tidak berubah)
         const [bookingsResult] = await db.query("SELECT COUNT(*) as totalBookings FROM bookings WHERE status = 'confirmed'");
         
-        // PERBAIKAN: Hitung pendapatan dari kolom 'total_price' di tabel bookings
+        // 3. Hitung total pendapatan bulan ini (DIPERBARUI dengan COALESCE)
         const [revenueResult] = await db.query(`
-            SELECT SUM(total_price) as monthlyRevenue
+            SELECT SUM(COALESCE(final_price, total_price)) as monthlyRevenue
             FROM bookings
             WHERE status = 'confirmed'
             AND MONTH(check_in_date) = MONTH(CURDATE())
             AND YEAR(check_in_date) = YEAR(CURDATE())
         `);
         
-        // --- PERBAIKAN DI SINI: Query '...' diganti dengan query yang benar ---
+        // 4. Ambil 5 pesanan terakhir (tidak berubah)
         const [recentBookings] = await db.query(`
             SELECT b.id, r.name as room_name, u.username as user_username, b.created_at
             FROM bookings b
@@ -299,12 +301,12 @@ router.get('/stats', async (req, res) => {
             ORDER BY b.created_at DESC
             LIMIT 5
         `);
-
-        // PERBAIKAN: Grafik pendapatan juga dari 'total_price'
+        
+        // 5. (Untuk Grafik) Ambil pendapatan 6 bulan terakhir (DIPERBARUI dengan COALESCE)
         const [monthlyRevenueData] = await db.query(`
             SELECT 
                 DATE_FORMAT(check_in_date, '%Y-%m') AS month,
-                SUM(total_price) AS revenue
+                SUM(COALESCE(final_price, total_price)) AS revenue
             FROM bookings
             WHERE status = 'confirmed' AND check_in_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
             GROUP BY month
