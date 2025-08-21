@@ -29,6 +29,7 @@ import ManageRoomsPage from './pages/ManageRoomsPage';
 import ManageAvailabilityPage from './pages/ManageAvailabilityPage';
 import ManageBookingsPage from './pages/ManageBookingsPage';
 import ManagePromosPage from './pages/ManagePromosPage';
+import ReportsPage from './pages/ReportsPage';
 import AdminPrintBookingPage from './pages/AdminPrintBookingPage';
 
 // Halaman Proses (Pembayaran, Cetak, dll)
@@ -77,6 +78,7 @@ function App() {
               <Route path="availability" element={<ManageAvailabilityPage />} />
               <Route path="bookings" element={<ManageBookingsPage />} />
               <Route path="promos" element={<ManagePromosPage />} />
+              <Route path="reports" element={<ReportsPage />} />
             </Route>
 
             {/* Rute yang TIDAK menggunakan AdminLayout (halaman penuh) */}

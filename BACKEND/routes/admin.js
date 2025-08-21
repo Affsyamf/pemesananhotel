@@ -505,4 +505,52 @@ router.delete('/promos/:id', async (req, res) => {
 });
 
 
+// --- API BARU UNTUK LAPORAN (FITUR BARU) ---
+router.get('/reports', async (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ message: 'Rentang tanggal (startDate dan endDate) diperlukan.' });
+    }
+
+    try {
+        // 1. Hitung Ringkasan Statistik (Total Pendapatan & Pesanan)
+        const [summary] = await db.query(`
+            SELECT
+                COUNT(id) AS totalBookings,
+                SUM(final_price) AS totalRevenue
+            FROM bookings
+            WHERE status = 'confirmed'
+            AND check_in_date BETWEEN ? AND ?;
+        `, [startDate, endDate]);
+
+        // 2. Hitung Kamar Terpopuler
+        const [popularRooms] = await db.query(`
+            SELECT
+                r.name,
+                COUNT(b.id) AS bookingCount
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            WHERE b.status = 'confirmed'
+            AND b.check_in_date BETWEEN ? AND ?
+            GROUP BY r.name
+            ORDER BY bookingCount DESC
+            LIMIT 5;
+        `, [startDate, endDate]);
+        
+        res.json({
+            summary: {
+                totalBookings: summary[0].totalBookings || 0,
+                totalRevenue: summary[0].totalRevenue || 0,
+            },
+            popularRooms
+        });
+
+    } catch (error) {
+        console.error("Error fetching reports:", error);
+        res.status(500).json({ message: "Server Error saat membuat laporan." });
+    }
+});
+
+
 module.exports = router;
