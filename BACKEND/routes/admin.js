@@ -514,17 +514,18 @@ router.get('/reports', async (req, res) => {
     }
 
     try {
-        // 1. Hitung Ringkasan Statistik (Total Pendapatan & Pesanan)
+        // --- PERBAIKAN DI SINI ---
+        // Menggunakan COALESCE untuk memastikan semua pesanan terhitung
         const [summary] = await db.query(`
             SELECT
                 COUNT(id) AS totalBookings,
-                SUM(final_price) AS totalRevenue
+                SUM(COALESCE(final_price, total_price)) AS totalRevenue
             FROM bookings
             WHERE status = 'confirmed'
             AND check_in_date BETWEEN ? AND ?;
         `, [startDate, endDate]);
 
-        // 2. Hitung Kamar Terpopuler
+        // Query Kamar Terpopuler (tidak perlu diubah)
         const [popularRooms] = await db.query(`
             SELECT
                 r.name,

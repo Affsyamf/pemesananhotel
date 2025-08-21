@@ -60,11 +60,11 @@ function ReportsPage() {
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-8 flex flex-col md:flex-row items-center gap-4">
                 <div className="flex-1 w-full">
                     <label className="label-style">Tanggal Mulai</label>
-                    <input type="date" name="startDate" value={dates.startDate} onChange={handleDateChange} className="input-style" />
+                    <input type="date" name="startDate" value={dates.startDate} onChange={handleDateChange} className="input-style dark:bg-slate-900 dark:text-white text-slate-900" />
                 </div>
                 <div className="flex-1 w-full">
                     <label className="label-style">Tanggal Selesai</label>
-                    <input type="date" name="endDate" value={dates.endDate} onChange={handleDateChange} className="input-style" />
+                    <input type="date" name="endDate" value={dates.endDate} onChange={handleDateChange} className="input-style dark:bg-slate-900 dark:text-white text-slate-900" />
                 </div>
                 <button onClick={handleGenerateReport} disabled={loading} className="btn-primary w-full md:w-auto mt-4 md:mt-0 self-end">
                     <Search size={18} className="mr-2" />
@@ -101,17 +101,17 @@ function ReportsPage() {
                             <table className="min-w-full">
                                 <thead className="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th className="th-style">Peringkat</th>
-                                        <th className="th-style">Nama Kamar</th>
-                                        <th className="th-style text-center">Jumlah Pesanan</th>
+                                        <th className="th-style dark:text-white text-slate-900 text-center">Peringkat</th>
+                                        <th className="th-style dark:text-white text-slate-900 text-center">Nama Kamar</th>
+                                        <th className="th-style dark:text-white text-slate-900 text-center">Jumlah Pesanan</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {reportData.popularRooms.map((room, index) => (
                                         <tr key={room.name}>
-                                            <td className="td-style text-center font-bold">{index + 1}</td>
-                                            <td className="td-style font-semibold">{room.name}</td>
-                                            <td className="td-style text-center">{room.bookingCount}</td>
+                                            <td className="td-style text-center font-bold dark:text-white text-slate-900 text-center">{index + 1}</td>
+                                            <td className="td-style font-semibold dark:text-white text-slate-900 text-center">{room.name}</td>
+                                            <td className="td-style dark:text-white text-slate-900 text-center">{room.bookingCount}</td>
                                         </tr>
                                     ))}
                                 </tbody>
