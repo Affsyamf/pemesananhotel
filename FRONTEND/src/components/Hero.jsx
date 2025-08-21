@@ -10,7 +10,7 @@ function Hero() {
       <div className="bg-black/60 absolute top-0 left-0 w-full h-screen"></div>
       <div className="z-10 text-center px-4">
         <h1 className="text-5xl md:text-7xl font-extrabold drop-shadow-lg leading-tight">
-          Selamat Datang di Hotel Mewah
+          Selamat Datang di La Hotel Afif
         </h1>
         <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">
           Pengalaman menginap tak terlupakan dengan pelayanan terbaik dan fasilitas premium.

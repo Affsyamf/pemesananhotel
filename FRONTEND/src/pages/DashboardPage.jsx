@@ -38,7 +38,7 @@ function DashboardPage() {
       <Hero />
       <About />
       {/* Kirim data kamar yang sudah diambil sebagai props ke RoomTypes */}
-      <section className="py-20">
+      <section className="py-20" id='rooms'>
           <div className="container mx-auto px-6">
               <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-2">
                   Kamar Pilihan Kami
