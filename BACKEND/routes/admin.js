@@ -3,7 +3,8 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 const router = express.Router();
-
+const multer = require('multer')
+const path = require('path');
 // Middleware ini akan melindungi semua rute di file ini
 router.use(isAuthenticated, isAdmin);
 
@@ -60,7 +61,6 @@ router.delete('/users/:id', async (req, res) => {
 // GET all rooms
 router.get('/rooms', async (req, res) => {
     try {
-        // Query ini sekarang mengambil satu gambar dari tabel room_images sebagai gambar utama
         const sql = `
             SELECT 
                 r.*, 
@@ -78,30 +78,52 @@ router.get('/rooms', async (req, res) => {
 
 // CREATE a new room
 router.post('/rooms', async (req, res) => {
+    // Ambil image_url dari body, tapi jangan simpan di tabel 'rooms'
+    const { name, type, price, quantity, facilities, description, image_url } = req.body;
+    const connection = await db.getConnection();
+
     try {
-        const { name, type, price, quantity, facilities, description, image_url } = req.body;
-        // Perbaikan: Pastikan jumlah placeholder (?) cocok dengan jumlah field
-        await db.query(
-            'INSERT INTO rooms (name, type, price, quantity, facilities, description, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, type, price, quantity, facilities, description, image_url]
+        await connection.beginTransaction();
+
+        // 1. Masukkan detail kamar (tanpa URL gambar) ke tabel 'rooms'
+        const [insertRoomResult] = await connection.query(
+            'INSERT INTO rooms (name, type, price, quantity, facilities, description) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, type, price, quantity, facilities, description]
         );
+        const newRoomId = insertRoomResult.insertId;
+
+        // 2. Jika ada URL gambar awal, masukkan ke tabel 'room_images'
+        if (image_url) {
+            await connection.query(
+                'INSERT INTO room_images (room_id, image_url, alt_text) VALUES (?, ?, ?)',
+                [newRoomId, image_url, name] // Gunakan nama kamar sebagai alt text
+            );
+        }
+
+        await connection.commit();
         res.status(201).json({ message: 'Kamar berhasil ditambahkan' });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        await connection.rollback();
+        console.error("Error saat menambah kamar:", error);
+        res.status(500).json({ message: 'Server Error saat menambahkan kamar' });
+    } finally {
+        connection.release();
     }
 });
 
 // UPDATE a room
 router.put('/rooms/:id', async (req, res) => {
     try {
-        const { name, type, price, quantity, facilities, description, image_url } = req.body;
+        // Form edit sekarang hanya mengurus detail teks. Gambar dikelola via galeri.
+        const { name, type, price, quantity, facilities, description } = req.body;
         await db.query(
-            'UPDATE rooms SET name = ?, type = ?, price = ?, quantity = ?, facilities = ?, description = ?, image_url = ? WHERE id = ?',
-            [name, type, price, quantity, facilities, description, image_url, req.params.id]
+            'UPDATE rooms SET name = ?, type = ?, price = ?, quantity = ?, facilities = ?, description = ? WHERE id = ?',
+            [name, type, price, quantity, facilities, description, req.params.id]
         );
         res.json({ message: 'Kamar berhasil diperbarui' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -554,6 +576,43 @@ router.get('/reports', async (req, res) => {
         res.status(500).json({ message: "Server Error saat membuat laporan." });
     }
 });
+
+
+// --- KONFIGURASI MULTER UNTUK PENYIMPANAN FILE ---
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // Tentukan folder penyimpanan
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        // Buat nama file yang unik untuk menghindari konflik
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
+
+
+router.post('/rooms/:roomId/upload-image', upload.single('image'), async (req, res) => {
+    const { roomId } = req.params;
+    if (!req.file) {
+        return res.status(400).json({ message: 'Tidak ada file yang diunggah.' });
+    }
+    try {
+        const imageUrl = `/uploads/${req.file.filename}`;
+        await db.query(
+            'INSERT INTO room_images (room_id, image_url, alt_text) VALUES (?, ?, ?)',
+            [roomId, imageUrl, req.body.alt_text || 'Gambar kamar']
+        );
+        res.status(201).json({ message: 'Gambar berhasil diunggah.', imageUrl });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error saat mengunggah gambar.' });
+    }
+});
+
+
 
 
 module.exports = router;
