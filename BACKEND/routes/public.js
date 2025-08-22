@@ -12,25 +12,24 @@ router.get('/rooms', async (req, res) => {
     }
 
     try {
-        // Query ini akan mencari kamar yang tersedia di SETIAP HARI
-        // dalam rentang tanggal yang dipilih.
+        // Query ini sekarang menghitung total harga dinamis (SUM(ra.price))
+        // dan memeriksa ketersediaan di setiap hari dalam rentang tanggal.
         const availabilitySql = `
             SELECT
-                r.id, r.name, r.type, r.price, r.facilities, r.description, r.image_url,
-                -- Ambil jumlah ketersediaan terendah dalam rentang tanggal sebagai sisa kamar
+                r.id, r.name, r.type, r.facilities, r.description,
+                (SELECT ri.image_url FROM room_images ri WHERE ri.room_id = r.id ORDER BY ri.id ASC LIMIT 1) as image_url,
+                SUM(ra.price) AS price, -- Ini sekarang adalah TOTAL HARGA untuk seluruh durasi menginap
                 MIN(ra.available_quantity) AS available_quantity
             FROM
                 rooms r
             JOIN
                 room_availability ra ON r.id = ra.room_id
             WHERE
-                -- Rentang tanggal inklusif di awal, eksklusif di akhir
                 ra.date >= ? AND ra.date < ? 
                 AND ra.is_active = TRUE
             GROUP BY
-                r.id, r.name, r.type, r.price, r.facilities, r.description, r.image_url
+                r.id, r.name, r.type, r.facilities, r.description, image_url
             HAVING
-                -- Hanya tampilkan kamar jika sisa kamar di setiap hari > 0
                 MIN(ra.available_quantity) > 0;
         `;
         
@@ -199,22 +198,33 @@ router.get('/rooms/:roomId/can-review', isAuthenticated, async (req, res) => {
 // --- MODIFIKASI ENDPOINT PEMESANAN ---
 router.post('/bookings', isAuthenticated, async (req, res) => {
     const { room_id, guest_name, guest_address, check_in_date, check_out_date } = req.body;
-    const userId = req.user.id; // <-- Variabel yang benar adalah 'userId'
+    const userId = req.user.id;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
         
-        const [roomDetails] = await connection.query('SELECT price FROM rooms WHERE id = ?', [room_id]);
-        if (roomDetails.length === 0) {
-            await connection.rollback();
-            return res.status(404).json({ message: 'Kamar tidak ditemukan.' });
-        }
-        const roomPrice = roomDetails[0].price;
-        const numberOfNights = (new Date(check_out_date) - new Date(check_in_date)) / (1000 * 60 * 60 * 24);
-        const totalPrice = roomPrice * numberOfNights;
+        const checkAvailabilitySql = `
+            SELECT date, available_quantity, price FROM room_availability
+            WHERE room_id = ? AND date >= ? AND date < ? AND is_active = TRUE
+            FOR UPDATE;
+        `;
+        const [availability] = await connection.query(checkAvailabilitySql, [room_id, check_in_date, check_out_date]);
 
-        // ... (logika validasi ketersediaan) ...
+        const dateDiff = (new Date(check_out_date) - new Date(check_in_date)) / (1000 * 60 * 60 * 24);
+        if (availability.length !== dateDiff || availability.some(day => day.available_quantity <= 0)) {
+            await connection.rollback();
+            return res.status(400).json({ message: 'Kamar tidak tersedia pada sebagian atau seluruh tanggal yang dipilih.' });
+        }
+
+        const totalPrice = availability.reduce((sum, day) => sum + parseFloat(day.price), 0);
+
+        const updateAvailabilitySql = `
+            UPDATE room_availability 
+            SET available_quantity = available_quantity - 1 
+            WHERE room_id = ? AND date >= ? AND date < ?;
+        `;
+        await connection.query(updateAvailabilitySql, [room_id, check_in_date, check_out_date]);
 
         const [insertResult] = await connection.query(
             'INSERT INTO bookings (user_id, room_id, guest_name, guest_address, total_price, check_in_date, check_out_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -223,15 +233,6 @@ router.post('/bookings', isAuthenticated, async (req, res) => {
         const newBookingId = insertResult.insertId;
         
         await connection.commit();
-
-        // --- SIMULASI PENGIRIMAN EMAIL KONFIRMASI ---
-        console.log('============================================');
-        console.log('📧 SIMULASI: Mengirim Email Konfirmasi...');
-        // PERBAIKAN: Menggunakan variabel 'userId' yang benar
-        console.log(`   Kepada: Pengguna ID ${userId}`); 
-        console.log(`   Booking ID: ${newBookingId}`);
-        console.log(`   Total Harga: ${totalPrice}`);
-        console.log('============================================');
         
         res.status(201).json({ 
             message: 'Pesanan dibuat, menunggu pembayaran.',

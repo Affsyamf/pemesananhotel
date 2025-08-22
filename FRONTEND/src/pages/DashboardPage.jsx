@@ -23,7 +23,7 @@ function DashboardPage() {
       } catch (error) {
         console.error("Gagal mengambil data kamar unggulan:", error);
         toast.error('Gagal memuat data kamar unggulan.');
-        // Anda bisa menambahkan toast error di sini jika mau
+        // toats error jika gagal mengambil data
       } finally {
         setLoading(false);
       }

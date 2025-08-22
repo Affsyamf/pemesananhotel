@@ -97,6 +97,14 @@ function BookRoomPage() {
         return [...allFacilities];
     }, [availableRooms]);
 
+     const numberOfNights = useMemo(() => {
+        if (!checkInDate || !checkOutDate) return 0;
+        const diffTime = new Date(checkOutDate) - new Date(checkInDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : 0;
+    }, [checkInDate, checkOutDate]);
+
+
     // --- Logika untuk Booking Modal (DIPERBARUI) ---
     const handleOpenModal = (room) => {
         setSelectedRoom(room);
@@ -160,7 +168,7 @@ function BookRoomPage() {
                     <p className="my-6 text-gray-600 dark:text-gray-200">Menampilkan {filteredRooms.length} kamar yang tersedia.</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredRooms.map(room => (
-                            <UserRoomCard key={room.id} room={room} onBook={handleOpenModal} />
+                            <UserRoomCard key={room.id} room={room} onBook={handleOpenModal} numberOfNights={numberOfNights}  />
                         ))}
                     </div>
                 </>
