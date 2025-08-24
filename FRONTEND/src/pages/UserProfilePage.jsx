@@ -3,6 +3,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { User, Lock, Save } from 'lucide-react';
 
+// --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 function UserProfilePage() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -17,13 +20,12 @@ function UserProfilePage() {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('token');
             try {
-                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
                 const response = await axios.get(`${apiUrl}/api/auth/profile`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setUser(response.data);
             } catch (error) {
-                toast.error(error.response?.data?.message||'Gagal mengambil data profil.');
+                toast.error(error.response?.data?.message || 'Gagal mengambil data profil.');
             } finally {
                 setLoading(false);
             }
@@ -42,7 +44,6 @@ function UserProfilePage() {
             return;
         }
         
-        // --- PERUBAHAN VALIDASI DI SINI ---
         if (passwords.newPassword.length < 1 || passwords.newPassword.length > 10) {
             toast.error('Password baru harus antara 1 hingga 10 karakter.');
             return;
@@ -52,7 +53,6 @@ function UserProfilePage() {
         const toastId = toast.loading('Menyimpan password baru...');
         const token = localStorage.getItem('token');
         try {
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             await axios.put(`${apiUrl}/api/auth/change-password`, {
                 oldPassword: passwords.oldPassword,
                 newPassword: passwords.newPassword

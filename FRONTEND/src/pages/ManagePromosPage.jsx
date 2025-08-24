@@ -4,16 +4,14 @@ import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import PromoFormModal from '../components/admin/PromoFormModal';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
-// Kita akan membuat komponen-komponen ini nanti
-// import PromoFormModal from '../components/admin/PromoFormModal';
-// import ConfirmationModal from '../components/admin/ConfirmationModal';
+
+// --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 function ManagePromosPage() {
     const [promos, setPromos] = useState([]);
     const [loading, setLoading] = useState(true);
-    // State untuk modal akan ditambahkan nanti
-
-        // State untuk modal
+    
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingPromo, setEditingPromo] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -23,7 +21,6 @@ function ManagePromosPage() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             const response = await axios.get(`${apiUrl}/api/admin/promos`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -52,11 +49,9 @@ function ManagePromosPage() {
         const token = localStorage.getItem('token');
         try {
             if (editingPromo) {
-                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
                 await axios.put(`${apiUrl}/api/admin/promos/${editingPromo.id}`, data, { headers: { Authorization: `Bearer ${token}` } });
                 toast.success('Promo berhasil diperbarui!', { id: toastId });
             } else {
-                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
                 await axios.post(`${apiUrl}/api/admin/promos`, data, { headers: { Authorization: `Bearer ${token}` } });
                 toast.success('Promo baru berhasil dibuat!', { id: toastId });
             }
@@ -76,12 +71,11 @@ function ManagePromosPage() {
         setIsDeleteModalOpen(false);
     };
 
-     const confirmDelete = async () => {
+    const confirmDelete = async () => {
         if (!promoToDelete) return;
         const toastId = toast.loading('Menghapus...');
         try {
             const token = localStorage.getItem('token');
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             await axios.delete(`${apiUrl}/api/admin/promos/${promoToDelete.id}`, { headers: { Authorization: `Bearer ${token}` } });
             toast.success('Promo berhasil dihapus.', { id: toastId });
             fetchPromos();
@@ -92,7 +86,6 @@ function ManagePromosPage() {
     };
     
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-
 
     return (
         <div className="container mx-auto p-6 md:p-10">

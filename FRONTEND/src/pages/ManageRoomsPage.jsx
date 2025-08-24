@@ -8,6 +8,9 @@ import AdminRoomFilter from '../components/admin/AdminRoomFilter';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
 import GalleryModal from '../components/admin/GalleryModal';
 
+// --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 function ManageRoomsPage() {
   const [allRooms, setAllRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +26,6 @@ function ManageRoomsPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const response = await axios.get(`${apiUrl}/api/admin/rooms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -44,7 +46,9 @@ function ManageRoomsPage() {
       if (filters.search && !room.name.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;
       }
-      const price = room.price; // Asumsi price ada di data room untuk filtering
+      // Asumsi 'price' ada di data room untuk filtering sisi klien, meskipun tidak diedit langsung.
+      // Ini mungkin perlu disesuaikan jika 'price' tidak lagi dikirim di GET /rooms.
+      const price = room.price; 
       const { min, max } = filters.price;
       if (min !== null && price < min) return false;
       if (max !== null && price > max) return false;
@@ -75,41 +79,23 @@ function ManageRoomsPage() {
     setSelectedRoomForGallery(null);
   };
 
-  // --- PERBAIKAN UTAMA DI FUNGSI INI ---
   const handleFormSubmit = async (data) => {
     const toastId = toast.loading('Menyimpan data...');
     const token = localStorage.getItem('token');
     try {
       if (editingRoom) {
-        // --- LOGIKA EDIT ---
-        // Saat mengedit, kita hanya mengirim data deskriptif.
-        // Harga dan kuantitas diatur di halaman inventaris.
         const payload = {
             name: data.name,
             type: data.type,
             facilities: data.facilities,
             description: data.description,
         };
-         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
         await axios.put(`${apiUrl}/api/admin/rooms/${editingRoom.id}`, payload, {
             headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Kamar berhasil diperbarui', { id: toastId });
       } else {
-        // --- LOGIKA TAMBAH BARU ---
-        // Saat menambah, kita WAJIB mengirim 'price' dan 'quantity'
-        // agar backend bisa membuat inventaris awal.
-        const payload = {
-            name: data.name,
-            type: data.type,
-            price: data.price, // Pastikan ini terkirim
-            quantity: data.quantity, // Pastikan ini terkirim
-            facilities: data.facilities,
-            description: data.description,
-            image_url: data.image_url,
-        };
-         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-        await axios.post(`${apiUrl}/api/admin/rooms`, payload, {
+        await axios.post(`${apiUrl}/api/admin/rooms`, data, {
             headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Kamar baru berhasil ditambahkan', { id: toastId });
@@ -135,7 +121,6 @@ function ManageRoomsPage() {
     if (!roomToDelete) return;
     try {
       const token = localStorage.getItem('token');
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       await axios.delete(`${apiUrl}/api/admin/rooms/${roomToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });

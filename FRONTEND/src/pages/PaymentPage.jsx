@@ -4,6 +4,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { CreditCard, Loader } from 'lucide-react';
 
+// --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 function PaymentPage() {
     const { bookingId } = useParams();
     const navigate = useNavigate();
@@ -11,7 +14,6 @@ function PaymentPage() {
     const [loading, setLoading] = useState(true);
     const [paying, setPaying] = useState(false);
 
-    // --- State Baru untuk Promo ---
     const [promoCode, setPromoCode] = useState('');
     const [discount, setDiscount] = useState(0);
     const [finalPrice, setFinalPrice] = useState(0);
@@ -21,14 +23,13 @@ function PaymentPage() {
         const fetchBooking = async () => {
             const token = localStorage.getItem('token');
             try {
-                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
                 const response = await axios.get(`${apiUrl}/api/public/booking/${bookingId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setBooking(response.data);
                 setFinalPrice(response.data.total_price);
             } catch (error) {
-                toast.error(error.response?.data?.message||'Gagal memuat detail pesanan.');
+                toast.error(error.response?.data?.message || 'Gagal memuat detail pesanan.');
                 navigate('/dashboard/my-bookings');
             } finally {
                 setLoading(false);
@@ -44,7 +45,6 @@ function PaymentPage() {
         }
         const toastId = toast.loading('Memverifikasi kode...');
         try {
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             const response = await axios.post(`${apiUrl}/api/public/promos/verify`, { code: promoCode });
             const { discountPercentage } = response.data;
             
@@ -66,27 +66,28 @@ function PaymentPage() {
         const toastId = toast.loading('Memproses pembayaran...');
         const token = localStorage.getItem('token');
         try {
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-             await axios.post(`${apiUrl}/api/public/bookings/${bookingId}/pay`, 
-            { promoCode: discount > 0 ? promoCode : null }, // Hanya kirim jika ada diskon
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        toast.success('Pembayaran berhasil!', { id: toastId });
-        navigate(`/payment-success/${bookingId}`);
-    } catch (error) {
-        toast.error(error.response?.data?.message || 'Pembayaran gagal.', { id: toastId });
-        setPaying(false);
-    }
+            await axios.post(`${apiUrl}/api/public/bookings/${bookingId}/pay`, 
+                { promoCode: discount > 0 ? promoCode : null },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success('Pembayaran berhasil!', { id: toastId });
+            navigate(`/payment-success/${bookingId}`);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Pembayaran gagal.', { id: toastId });
+            setPaying(false);
+        }
     };
 
     if (loading) return <div className="flex justify-center items-center min-h-screen"><Loader className="animate-spin" /></div>;
+    
+    // PERBAIKAN: Tambahkan fungsi formatCurrency yang hilang
     const formatCurrency = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
                 <h1 className="text-2xl font-bold text-center">Konfirmasi Pembayaran</h1>
                 
-                {/* --- Input Kode Promo --- */}
                 <div className="space-y-2">
                     <label className="label-style">Punya Kode Promo?</label>
                     <div className="flex gap-2">

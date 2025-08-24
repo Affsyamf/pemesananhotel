@@ -62,7 +62,7 @@ function LoginPage() {
                 autoComplete="email"
                 required
                 onChange={handleChange}
-                className="input-style mt-1 dark:text-white dark:bg-slate-900" // Ikon dan padding pl-10 dihapus
+                className="input-style mt-1 dark:text-white dark:bg-slate-900"
                 placeholder="anda@email.com"
               />
             </div>
@@ -77,10 +77,10 @@ function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password "
+                autoComplete="current-password"
                 required
                 onChange={handleChange}
-                className="input-style mt-1 dark:text-white dark:bg-slate-900" // Ikon dan padding pl-10 dihapus
+                className="input-style mt-1 dark:text-white dark:bg-slate-900"
                 placeholder="••••••••"
               />
             </div>

@@ -1,40 +1,31 @@
 import React, { useState, useMemo } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import UserRoomCard from '../components/UserRoomCard';
 import { useNavigate } from 'react-router-dom';
+import UserRoomCard from '../components/UserRoomCard';
 import BookingModal from '../components/BookingModal';
 import RoomFilter from '../components/RoomFilter';
 import { Search } from 'lucide-react';
 
-// Fungsi untuk format tanggal ke YYYY-MM-DD
 const formatDate = (date) => {
     if (!date) return '';
     return new Date(date).toISOString().split('T')[0];
 };
 
 function BookRoomPage() {
-  const navigate = useNavigate();
-    // State untuk menyimpan semua kamar yang *tersedia* berdasarkan tanggal
+    const navigate = useNavigate();
     const [availableRooms, setAvailableRooms] = useState([]); 
     const [loading, setLoading] = useState(false);
-    
-    // State untuk input tanggal
     const [checkInDate, setCheckInDate] = useState('');
     const [checkOutDate, setCheckOutDate] = useState('');
-
-    // State untuk filter (tidak berubah)
     const [filters, setFilters] = useState({
         price: { min: null, max: null },
         type: 'Semua',
         facilities: [],
     });
-    
-    // State untuk modal booking (tidak berubah)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
 
-    // Fungsi baru untuk mencari ketersediaan kamar
     const handleAvailabilitySearch = async () => {
         if (!checkInDate || !checkOutDate) {
             toast.error('Silakan pilih tanggal check-in dan check-out.');
@@ -47,10 +38,9 @@ function BookRoomPage() {
 
         try {
             setLoading(true);
-            setAvailableRooms([]); // Kosongkan daftar kamar saat pencarian baru
+            setAvailableRooms([]);
             
-            // Panggil API GET /rooms dengan parameter tanggal
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             const response = await axios.get(`${apiUrl}/api/public/rooms`, {
                 params: {
                     checkInDate: formatDate(checkInDate),
@@ -69,7 +59,6 @@ function BookRoomPage() {
         }
     };
 
-    // Logika filter sekarang berjalan di atas `availableRooms`
     const filteredRooms = useMemo(() => {
         return availableRooms.filter(room => {
             const price = room.price;
@@ -86,7 +75,6 @@ function BookRoomPage() {
         });
     }, [availableRooms, filters]);
 
-    // Ekstrak tipe dan fasilitas dari kamar yang tersedia
     const availableTypes = useMemo(() => [...new Set(availableRooms.map(room => room.type))], [availableRooms]);
     const availableFacilities = useMemo(() => {
         const allFacilities = new Set();
@@ -98,15 +86,13 @@ function BookRoomPage() {
         return [...allFacilities];
     }, [availableRooms]);
 
-     const numberOfNights = useMemo(() => {
+    const numberOfNights = useMemo(() => {
         if (!checkInDate || !checkOutDate) return 0;
         const diffTime = new Date(checkOutDate) - new Date(checkInDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 ? diffDays : 0;
     }, [checkInDate, checkOutDate]);
 
-
-    // --- Logika untuk Booking Modal (DIPERBARUI) ---
     const handleOpenModal = (room) => {
         setSelectedRoom(room);
         setIsModalOpen(true);
@@ -122,7 +108,6 @@ function BookRoomPage() {
                 { 
                     ...data, 
                     room_id: selectedRoom.id, 
-                    // Kirim tanggal yang sudah dipilih
                     check_in_date: formatDate(checkInDate), 
                     check_out_date: formatDate(checkOutDate) 
                 }, 
@@ -131,8 +116,6 @@ function BookRoomPage() {
             toast.success('Pesanan dibuat, mengarahkan ke pembayaran...', { id: toastId });
             handleCloseModal();
             navigate(`/pay/${response.data.bookingId}`);
-            // Lakukan pencarian ulang untuk memperbarui daftar kamar
-            handleAvailabilitySearch(); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Gagal membuat pesanan', { id: toastId });
         }
@@ -142,7 +125,6 @@ function BookRoomPage() {
         <div className="container mx-auto p-6 md:p-10">
             <h1 className="text-4xl font-bold text-gray-800 mb-4 dark:text-gray-200">Cari Ketersediaan Kamar</h1>
             
-            {/* --- Form Input Tanggal Baru --- */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 flex flex-col md:flex-row items-center gap-4">
                 <div className="flex-1 w-full">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Check-in</label>
@@ -158,7 +140,6 @@ function BookRoomPage() {
                 </button>
             </div>
             
-            {/* Tampilkan filter dan hasil HANYA setelah pencarian dilakukan */}
             {availableRooms.length > 0 && (
                 <>
                     <RoomFilter 
@@ -176,7 +157,6 @@ function BookRoomPage() {
                 </>
             )}
 
-            {/* Modal tidak perlu diubah, karena tanggal diambil dari state halaman ini */}
             <BookingModal 
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

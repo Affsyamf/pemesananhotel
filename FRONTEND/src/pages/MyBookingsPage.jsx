@@ -4,10 +4,12 @@ import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { Printer, XCircle, CreditCard } from 'lucide-react';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
-import Pagination from '../components/admin/Pagination'; // <-- Pastikan ini di-import
+import Pagination from '../components/admin/Pagination';
+
+// --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 function MyBookingsPage() {
-  // PERBAIKAN 1: Gunakan state untuk menampung objek paginasi
   const [pageData, setPageData] = useState({ data: [], totalPages: 1, currentPage: 1 });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,15 +20,13 @@ function MyBookingsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      // PERBAIKAN 2: Kirim parameter page ke API
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      const response = await axios.get(`${apiUrl}S/api/public/my-bookings?page=${page}&limit=10`, {
+      // PERBAIKAN: Hapus 'S' yang salah dari URL
+      const response = await axios.get(`${apiUrl}/api/public/my-bookings?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // PERBAIKAN 3: Simpan seluruh objek data dari API
       setPageData(response.data);
     } catch (error) {
-      toast.error(error.response?.data?.message||'Gagal mengambil data pesanan');
+      toast.error(error.response?.data?.message || 'Gagal mengambil data pesanan');
     } finally {
       setLoading(false);
     }
@@ -55,12 +55,11 @@ function MyBookingsPage() {
     const toastId = toast.loading('Memproses pembatalan...');
     try {
       const token = localStorage.getItem('token');
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       await axios.put(`${apiUrl}/api/public/bookings/${bookingToCancel.id}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Pesanan berhasil dibatalkan', { id: toastId });
-      fetchMyBookings(currentPage); // Refresh halaman saat ini
+      fetchMyBookings(currentPage);
       closeCancelModal();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal membatalkan pesanan', { id: toastId });
@@ -73,8 +72,6 @@ function MyBookingsPage() {
     <div className="container mx-auto p-6 md:p-10">
       <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-8">Riwayat Pesanan Saya</h1>
         
-      {/* --- PERBAIKAN DI SINI --- */}
-      {/* Menambahkan pengecekan `pageData.data` untuk mencegah crash */}
       {loading ? <p className="dark:text-gray-300">Memuat riwayat pesanan...</p> : !pageData.data || pageData.data.length === 0 ? (
         <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-200">Anda belum memiliki pesanan.</h3>
@@ -87,7 +84,7 @@ function MyBookingsPage() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th className="th-style dark:text-gray-100 text-center">Pesanan Ke-</th>
+                            <th className="th-style dark:text-gray-100 text-center">Pesanan Ke-#</th>
                             <th className="th-style dark:text-gray-100 text-center">Nama Kamar</th>
                             <th className="th-style dark:text-gray-100 text-center">Tanggal Pesan</th>
                             <th className="th-style dark:text-gray-100 text-center">Check-in</th>
@@ -123,7 +120,7 @@ function MyBookingsPage() {
                                     </span>
                                 </td>
                                 <td className="td-style">
-                                    <div className="flex items-center space-x-4">
+                                    <div className="flex items-center justify-center space-x-4">
                                         {booking.status === 'awaiting_payment' && (
                                             <Link to={`/pay/${booking.id}`} className="text-blue-600 hover:text-blue-800 flex items-center text-sm font-semibold dark:text-blue-400 dark:hover:text-blue-300">
                                                 <CreditCard size={16} className="mr-1" />

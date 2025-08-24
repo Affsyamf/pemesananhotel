@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'; // <-- 1. Import useMemo & useCallback
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -6,6 +6,9 @@ import toast from 'react-hot-toast';
 import ReviewList from '../components/ReviewList';
 import ReviewForm from '../components/ReviewForm';
 import StarRating from '../components/StarRating';
+
+// --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 function RoomDetailPage() {
   const { roomId } = useParams();
@@ -17,15 +20,12 @@ function RoomDetailPage() {
   const [mainImage, setMainImage] = useState('');
 
   const token = localStorage.getItem('token');
-  // 2. Stabilkan objek userInfo dengan useMemo
   const userInfo = useMemo(() => (token ? { token } : null), [token]);
 
-  // 3. Bungkus fungsi fetch data dengan useCallback
   const fetchRoomData = useCallback(async () => {
     if (!roomId) return;
     setLoading(true);
     try {
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
         const roomUrl = `${apiUrl}/api/public/rooms/${roomId}`;
         const reviewsUrl = `${apiUrl}/api/public/rooms/${roomId}/reviews`;
 
@@ -35,7 +35,6 @@ function RoomDetailPage() {
         ];
 
         if (userInfo) {
-           const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             const canReviewUrl = `${apiUrl}/api/public/rooms/${roomId}/can-review`;
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
             apiCalls.push(axios.get(canReviewUrl, config));
@@ -56,15 +55,15 @@ function RoomDetailPage() {
         }
 
     } catch (error) {
-        toast.error(error.response?.data?.message||"Gagal mengambil data detail kamar.");
+        toast.error(error.response?.data?.message || "Gagal mengambil data detail kamar.");
     } finally {
         setLoading(false);
     }
-  }, [roomId, userInfo]); // Dependensi untuk useCallback
+  }, [roomId, userInfo]);
 
   useEffect(() => {
     fetchRoomData();
-  }, [fetchRoomData]); // 4. useEffect sekarang bergantung pada fungsi yang stabil
+  }, [fetchRoomData]);
 
   const handleReviewSubmit = async ({ rating, comment }) => {
     setSubmitLoading(true);
@@ -73,12 +72,10 @@ function RoomDetailPage() {
       const config = {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}` },
       };
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       const reviewUrl = `${apiUrl}/api/public/rooms/${roomId}/reviews`;
       await axios.post(reviewUrl, { rating, comment }, config);
       
       toast.success('Ulasan Anda berhasil dikirim!', { id: toastId });
-      // Panggil ulang fetchRoomData untuk refresh semuanya
       fetchRoomData(); 
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal mengirim ulasan.', { id: toastId });
@@ -92,7 +89,9 @@ function RoomDetailPage() {
 
   const getFullImageUrl = (url) => {
       if (!url) return 'https://placehold.co/1200x600?text=Gambar+Tidak+Tersedia';
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      if (url.startsWith('http')) {
+          return url;
+      }
       return `${apiUrl}${url}`;
   };
 

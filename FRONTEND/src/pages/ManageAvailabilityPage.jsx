@@ -3,6 +3,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 
+// --- PERBAIKAN 1: Deklarasikan apiUrl satu kali di luar komponen ---
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 function ManageAvailabilityPage() {
     const [rooms, setRooms] = useState([]);
     const [selectedRoomId, setSelectedRoomId] = useState('');
@@ -10,20 +13,19 @@ function ManageAvailabilityPage() {
     const [availabilityData, setAvailabilityData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [changes, setChanges] = useState({}); // Lacak perubahan
+    const [changes, setChanges] = useState({});
 
-    // 1. Ambil daftar semua kamar untuk dropdown
     useEffect(() => {
         const fetchRooms = async () => {
             const token = localStorage.getItem('token');
             try {
-                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                // Gunakan apiUrl yang sudah dideklarasikan
                 const response = await axios.get(`${apiUrl}/api/admin/rooms`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setRooms(response.data);
                 if (response.data.length > 0) {
-                    setSelectedRoomId(response.data[0].id); // Pilih kamar pertama sebagai default
+                    setSelectedRoomId(response.data[0].id);
                 }
             } catch (error) {
                 toast.error(error.response?.data?.message||'Gagal mengambil daftar kamar.');
@@ -32,16 +34,15 @@ function ManageAvailabilityPage() {
         fetchRooms();
     }, []);
 
-    // 2. Ambil data ketersediaan saat kamar atau bulan berubah
     const fetchAvailability = useCallback(async () => {
         if (!selectedRoomId) return;
         setLoading(true);
-        setChanges({}); // Reset perubahan saat data baru dimuat
+        setChanges({});
         const token = localStorage.getItem('token');
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
         try {
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            // Gunakan apiUrl yang sudah dideklarasikan
             const response = await axios.get(`${apiUrl}/api/admin/availability/${selectedRoomId}`, {
                 params: { year, month },
                 headers: { Authorization: `Bearer ${token}` }
@@ -58,7 +59,6 @@ function ManageAvailabilityPage() {
         fetchAvailability();
     }, [fetchAvailability]);
 
-    // 3. Handler untuk menyimpan perubahan
     const handleSaveChanges = async () => {
         const updates = Object.values(changes);
         if (updates.length === 0) {
@@ -69,12 +69,12 @@ function ManageAvailabilityPage() {
         const toastId = toast.loading('Menyimpan perubahan...');
         const token = localStorage.getItem('token');
         try {
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            // Gunakan apiUrl yang sudah dideklarasikan
             await axios.put(`${apiUrl}/api/admin/availability`, { updates }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Ketersediaan berhasil diperbarui!', { id: toastId });
-            setChanges({}); // Reset perubahan setelah berhasil
+            setChanges({});
         } catch (error) {
             toast.error(error.response?.data?.message||'Gagal menyimpan perubahan.', { id: toastId });
         } finally {
@@ -82,18 +82,15 @@ function ManageAvailabilityPage() {
         }
     };
 
-    // 4. Handler untuk mengubah data di state lokal
     const handleDataChange = (id, field, value) => {
-        // Update data di tampilan
         setAvailabilityData(prevData =>
             prevData.map(day => (day.id === id ? { ...day, [field]: value } : day))
         );
-        // Lacak perubahan untuk dikirim ke backend
         setChanges(prevChanges => ({
             ...prevChanges,
             [id]: {
-                ...availabilityData.find(d => d.id === id), // Ambil data asli
-                ...prevChanges[id], // Ambil perubahan sebelumnya
+                ...availabilityData.find(d => d.id === id),
+                ...prevChanges[id],
                 id,
                 [field]: value,
             }
@@ -112,7 +109,6 @@ function ManageAvailabilityPage() {
         <div className="container mx-auto p-6 md:p-10">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-8">Manajemen Inventaris Harian</h1>
 
-            {/* Kontrol */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex-1 w-full">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pilih Tipe Kamar</label>
@@ -120,37 +116,45 @@ function ManageAvailabilityPage() {
                         {rooms.map(room => <option key={room.id} value={room.id}>{room.name}</option>)}
                     </select>
                 </div>
-                <div className="flex items-center gap-1 -mb-5">
+                <div className="flex items-center gap-1">
                     <button onClick={() => changeMonth(-1)} className="btn-secondary p-2 dark:bg-slate-900 dark:text-white"><ChevronLeft size={20} /></button>
                     <span className="font-bold text-lg w-48 text-center dark:text-white">
                         {currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
                     </span>
                     <button onClick={() => changeMonth(1)} className="btn-secondary p-2 dark:bg-slate-900 dark:text-white"><ChevronRight size={20} /></button>
                 </div>
-                <button onClick={handleSaveChanges} disabled={saving || Object.keys(changes).length === 0} className="btn-primary -mb-5">
+                <button onClick={handleSaveChanges} disabled={saving || Object.keys(changes).length === 0} className="btn-primary">
                     <Save size={18} className="mr-2" />
                     {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
                 </button>
             </div>
 
-            {/* Tabel Inventaris */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                 <div className="overflow-x-auto">
                     <table className="min-w-full">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th className="th-style dark:text-white text-slate-900 ">Tanggal</th>
+                                <th className="th-style dark:text-white text-slate-900">Harga</th>
                                 <th className="th-style dark:text-white text-slate-900">Sisa Kamar</th>
                                 <th className="th-style dark:text-white text-slate-900">Status Penjualan</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {loading ? (
-                                <tr><td colSpan="3" className="text-center p-4">Memuat data...</td></tr>
+                                <tr><td colSpan="4" className="text-center p-4">Memuat data...</td></tr>
                             ) : (
                                 availabilityData.map(day => (
                                     <tr key={day.id}>
                                         <td className="td-style font-semibold dark:text-white">{new Date(day.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</td>
+                                        <td className="td-style">
+                                            <input
+                                                type="number"
+                                                value={day.price}
+                                                onChange={e => handleDataChange(day.id, 'price', parseFloat(e.target.value))}
+                                                className="input-style w-32 text-center dark:bg-slate-900 dark:text-white text-slate-900"
+                                            />
+                                        </td>
                                         <td className="td-style">
                                             <input
                                                 type="number"
