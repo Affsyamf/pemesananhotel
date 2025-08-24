@@ -15,7 +15,8 @@ function AdminPrintBookingPage() {
         const fetchBookingDetails = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get(`http://localhost:5001/api/admin/booking/${bookingId}`, {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                const response = await axios.get(`${apiUrl}/api/admin/booking/${bookingId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setBooking(response.data);

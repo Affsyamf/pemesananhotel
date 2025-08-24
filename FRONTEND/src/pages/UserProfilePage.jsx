@@ -17,7 +17,8 @@ function UserProfilePage() {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://localhost:5001/api/auth/profile', {
+                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                const response = await axios.get(`${apiUrl}/api/auth/profile`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setUser(response.data);
@@ -51,7 +52,8 @@ function UserProfilePage() {
         const toastId = toast.loading('Menyimpan password baru...');
         const token = localStorage.getItem('token');
         try {
-            await axios.put('http://localhost:5001/api/auth/change-password', {
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            await axios.put(`${apiUrl}/api/auth/change-password`, {
                 oldPassword: passwords.oldPassword,
                 newPassword: passwords.newPassword
             }, {

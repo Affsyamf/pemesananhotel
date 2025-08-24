@@ -28,7 +28,8 @@ function ManageUsersPage() {
        setLoading(true);
        try {
            const token = localStorage.getItem('token');
-           const response = await axios.get(`http://localhost:5001/api/admin/users?page=${page}&limit=10`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+           const response = await axios.get(`${apiUrl}/api/admin/users?page=${page}&limit=10`, {
                headers: { Authorization: `Bearer ${token}` }
            });
            setPageData(response.data); // Simpan seluruh objek respon
@@ -63,13 +64,15 @@ function ManageUsersPage() {
    const token = localStorage.getItem('token');
    try {
        if (editingUser) {
-           await axios.put(`http://localhost:5001/api/admin/users/${editingUser.id}`, data, {
+         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+           await axios.put(`${apiUrl}/api/admin/users/${editingUser.id}`, data, {
                headers: { Authorization: `Bearer ${token}` }
            });
            toast.success('User berhasil diperbarui', { id: toastId });
        } else {
            // Endpoint untuk menambah user baru oleh admin mungkin berbeda, sesuaikan jika perlu
-           await axios.post('http://localhost:5001/api/auth/register', data);
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+           await axios.post(`${apiUrl}/api/auth/register`, data);
            toast.success('User baru berhasil ditambahkan', { id: toastId });
        }
        // PERBAIKAN 2: Kirim currentPage saat fetch ulang
@@ -96,7 +99,8 @@ function ManageUsersPage() {
    const toastId = toast.loading('Menghapus pengguna...');
    try {
      const token = localStorage.getItem('token');
-     await axios.delete(`http://localhost:5001/api/admin/users/${userToDelete.id}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+     await axios.delete(`${apiUrl}/api/admin/users/${userToDelete.id}`, {
        headers: { Authorization: `Bearer ${token}` }
      });
      toast.success('User berhasil dihapus', { id: toastId });

@@ -25,8 +25,9 @@ function RoomDetailPage() {
     if (!roomId) return;
     setLoading(true);
     try {
-        const roomUrl = `http://localhost:5001/api/public/rooms/${roomId}`;
-        const reviewsUrl = `http://localhost:5001/api/public/rooms/${roomId}/reviews`;
+       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        const roomUrl = `${apiUrl}/api/public/rooms/${roomId}`;
+        const reviewsUrl = `${apiUrl}/api/public/rooms/${roomId}/reviews`;
 
         const apiCalls = [
             axios.get(roomUrl),
@@ -34,7 +35,8 @@ function RoomDetailPage() {
         ];
 
         if (userInfo) {
-            const canReviewUrl = `http://localhost:5001/api/public/rooms/${roomId}/can-review`;
+           const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const canReviewUrl = `${apiUrl}/api/public/rooms/${roomId}/can-review`;
             const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
             apiCalls.push(axios.get(canReviewUrl, config));
         }
@@ -71,7 +73,8 @@ function RoomDetailPage() {
       const config = {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userInfo.token}` },
       };
-      const reviewUrl = `http://localhost:5001/api/public/rooms/${roomId}/reviews`;
+       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const reviewUrl = `${apiUrl}/api/public/rooms/${roomId}/reviews`;
       await axios.post(reviewUrl, { rating, comment }, config);
       
       toast.success('Ulasan Anda berhasil dikirim!', { id: toastId });
@@ -89,7 +92,8 @@ function RoomDetailPage() {
 
   const getFullImageUrl = (url) => {
       if (!url) return 'https://placehold.co/1200x600?text=Gambar+Tidak+Tersedia';
-      return `http://localhost:5001${url}`;
+       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      return `${apiUrl}${url}`;
   };
 
   return (

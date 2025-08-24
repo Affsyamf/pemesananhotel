@@ -22,7 +22,8 @@ function ResetPasswordPage() {
         setLoading(true);
         setMessage('');
         try {
-            const response = await axios.post(`http://localhost:5001/api/auth/reset-password/${token}`, { newPassword });
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.post(`${apiUrl}/api/auth/reset-password/${token}`, { newPassword });
             setMessage(response.data.message);
             toast.success('Password berhasil direset!');
             setTimeout(() => navigate('/login'), 3000); // Arahkan ke login setelah 3 detik

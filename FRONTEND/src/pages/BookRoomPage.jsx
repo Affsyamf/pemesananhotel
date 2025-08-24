@@ -50,7 +50,8 @@ function BookRoomPage() {
             setAvailableRooms([]); // Kosongkan daftar kamar saat pencarian baru
             
             // Panggil API GET /rooms dengan parameter tanggal
-            const response = await axios.get('http://localhost:5001/api/public/rooms', {
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.get(`${apiUrl}/api/public/rooms`, {
                 params: {
                     checkInDate: formatDate(checkInDate),
                     checkOutDate: formatDate(checkOutDate)
@@ -116,7 +117,8 @@ function BookRoomPage() {
         const toastId = toast.loading('Memproses pesanan...');
         const token = localStorage.getItem('token');
         try {
-           const response = await axios.post('http://localhost:5001/api/public/bookings',
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+           const response = await axios.post(`${apiUrl}/api/public/bookings`,
                 { 
                     ...data, 
                     room_id: selectedRoom.id, 

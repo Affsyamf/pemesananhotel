@@ -18,7 +18,8 @@ function DashboardPage() {
     const fetchFeaturedRooms = async () => {
       try {
         // Mengambil data dari endpoint publik /api/rooms
-        const response = await axios.get('http://localhost:5001/api/public/featured-rooms');
+         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        const response = await axios.get(`${apiUrl}/api/public/featured-rooms`);
         setFeaturedRooms(response.data);
       } catch (error) {
         console.error("Gagal mengambil data kamar unggulan:", error);

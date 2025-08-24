@@ -18,7 +18,8 @@ function LoginPage() {
     const toastId = toast.loading('Mencoba masuk...');
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', formData);
+       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const response = await axios.post(`${apiUrl}/api/auth/login`, formData);
       const { token, role } = response.data;
 
       localStorage.setItem('token', token);

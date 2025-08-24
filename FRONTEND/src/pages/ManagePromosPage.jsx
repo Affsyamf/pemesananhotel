@@ -23,7 +23,8 @@ function ManagePromosPage() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5001/api/admin/promos', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.get(`${apiUrl}/api/admin/promos`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setPromos(response.data);
@@ -51,10 +52,12 @@ function ManagePromosPage() {
         const token = localStorage.getItem('token');
         try {
             if (editingPromo) {
-                await axios.put(`http://localhost:5001/api/admin/promos/${editingPromo.id}`, data, { headers: { Authorization: `Bearer ${token}` } });
+                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                await axios.put(`${apiUrl}/api/admin/promos/${editingPromo.id}`, data, { headers: { Authorization: `Bearer ${token}` } });
                 toast.success('Promo berhasil diperbarui!', { id: toastId });
             } else {
-                await axios.post('http://localhost:5001/api/admin/promos', data, { headers: { Authorization: `Bearer ${token}` } });
+                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                await axios.post(`${apiUrl}/api/admin/promos`, data, { headers: { Authorization: `Bearer ${token}` } });
                 toast.success('Promo baru berhasil dibuat!', { id: toastId });
             }
             fetchPromos();
@@ -78,7 +81,8 @@ function ManagePromosPage() {
         const toastId = toast.loading('Menghapus...');
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/admin/promos/${promoToDelete.id}`, { headers: { Authorization: `Bearer ${token}` } });
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            await axios.delete(`${apiUrl}/api/admin/promos/${promoToDelete.id}`, { headers: { Authorization: `Bearer ${token}` } });
             toast.success('Promo berhasil dihapus.', { id: toastId });
             fetchPromos();
             closeDeleteModal();

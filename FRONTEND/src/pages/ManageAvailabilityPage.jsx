@@ -17,7 +17,8 @@ function ManageAvailabilityPage() {
         const fetchRooms = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://localhost:5001/api/admin/rooms', {
+                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                const response = await axios.get(`${apiUrl}/api/admin/rooms`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setRooms(response.data);
@@ -40,7 +41,8 @@ function ManageAvailabilityPage() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1;
         try {
-            const response = await axios.get(`http://localhost:5001/api/admin/availability/${selectedRoomId}`, {
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.get(`${apiUrl}/api/admin/availability/${selectedRoomId}`, {
                 params: { year, month },
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -67,7 +69,8 @@ function ManageAvailabilityPage() {
         const toastId = toast.loading('Menyimpan perubahan...');
         const token = localStorage.getItem('token');
         try {
-            await axios.put('http://localhost:5001/api/admin/availability', { updates }, {
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            await axios.put(`${apiUrl}/api/admin/availability`, { updates }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Ketersediaan berhasil diperbarui!', { id: toastId });

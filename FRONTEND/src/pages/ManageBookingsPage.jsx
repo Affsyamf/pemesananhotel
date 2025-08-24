@@ -24,7 +24,8 @@ function ManageBookingsPage() {
         try {
             const token = localStorage.getItem('token');
             // PERBAIKAN 2: URL sekarang menyertakan parameter page & limit
-            const response = await axios.get(`http://localhost:5001/api/admin/bookings?page=${page}&limit=10`, {
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.get(`${apiUrl}/api/admin/bookings?page=${page}&limit=10`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // PERBAIKAN 3: Simpan seluruh objek respon, bukan hanya data

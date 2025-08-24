@@ -21,7 +21,8 @@ function PaymentPage() {
         const fetchBooking = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get(`http://localhost:5001/api/public/booking/${bookingId}`, {
+                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                const response = await axios.get(`${apiUrl}/api/public/booking/${bookingId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setBooking(response.data);
@@ -43,7 +44,8 @@ function PaymentPage() {
         }
         const toastId = toast.loading('Memverifikasi kode...');
         try {
-            const response = await axios.post('http://localhost:5001/api/public/promos/verify', { code: promoCode });
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.post(`${apiUrl}/api/public/promos/verify`, { code: promoCode });
             const { discountPercentage } = response.data;
             
             const discountAmount = (booking.total_price * discountPercentage) / 100;
@@ -64,7 +66,8 @@ function PaymentPage() {
         const toastId = toast.loading('Memproses pembayaran...');
         const token = localStorage.getItem('token');
         try {
-             await axios.post(`http://localhost:5001/api/public/bookings/${bookingId}/pay`, 
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+             await axios.post(`${apiUrl}/api/public/bookings/${bookingId}/pay`, 
             { promoCode: discount > 0 ? promoCode : null }, // Hanya kirim jika ada diskon
             { headers: { Authorization: `Bearer ${token}` } }
         );

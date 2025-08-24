@@ -23,7 +23,8 @@ function ManageRoomsPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/admin/rooms', {
+       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const response = await axios.get(`${apiUrl}/api/admin/rooms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAllRooms(response.data);
@@ -89,7 +90,8 @@ function ManageRoomsPage() {
             facilities: data.facilities,
             description: data.description,
         };
-        await axios.put(`http://localhost:5001/api/admin/rooms/${editingRoom.id}`, payload, {
+         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        await axios.put(`${apiUrl}/api/admin/rooms/${editingRoom.id}`, payload, {
             headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Kamar berhasil diperbarui', { id: toastId });
@@ -106,7 +108,8 @@ function ManageRoomsPage() {
             description: data.description,
             image_url: data.image_url,
         };
-        await axios.post('http://localhost:5001/api/admin/rooms', payload, {
+         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        await axios.post(`${apiUrl}/api/admin/rooms`, payload, {
             headers: { Authorization: `Bearer ${token}` }
         });
         toast.success('Kamar baru berhasil ditambahkan', { id: toastId });
@@ -132,7 +135,8 @@ function ManageRoomsPage() {
     if (!roomToDelete) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5001/api/admin/rooms/${roomToDelete.id}`, {
+       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      await axios.delete(`${apiUrl}/api/admin/rooms/${roomToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Kamar berhasil dihapus');

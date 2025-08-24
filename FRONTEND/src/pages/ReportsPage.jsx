@@ -38,7 +38,8 @@ function ReportsPage() {
         setReportData(null);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5001/api/admin/reports', {
+             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const response = await axios.get(`${apiUrl}/api/admin/reports`, {
                 params: dates,
                 headers: { Authorization: `Bearer ${token}` }
             });
