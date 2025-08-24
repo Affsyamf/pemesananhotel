@@ -3,28 +3,36 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 const router = express.Router();
-const multer = require('multer')
+const multer = require('multer');
 const path = require('path');
+
 // Middleware ini akan melindungi semua rute di file ini
 router.use(isAuthenticated, isAdmin);
 
+// --- KONFIGURASI MULTER ---
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+
 // === CRUD USERS ===
-// GET all users
 router.get('/users', async (req, res) => {
     try {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
         const offset = (page - 1) * limit;
-
-        // Query untuk mengambil data per halaman
         const [users] = await db.query(
             'SELECT id, username, email, role FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?',
             [limit, offset]
         );
-
-        // Query untuk menghitung total data
         const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM users');
-        
         res.json({
             data: users,
             totalPages: Math.ceil(total / limit),
@@ -35,7 +43,6 @@ router.get('/users', async (req, res) => {
     }
 });
 
-// UPDATE a user
 router.put('/users/:id', async (req, res) => {
     try {
         const { username, email, role } = req.body;
@@ -46,7 +53,6 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-// DELETE a user
 router.delete('/users/:id', async (req, res) => {
     try {
         await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
@@ -58,7 +64,6 @@ router.delete('/users/:id', async (req, res) => {
 
 
 // === CRUD ROOMS ===
-// GET all rooms
 router.get('/rooms', async (req, res) => {
     try {
         const sql = `
@@ -76,59 +81,72 @@ router.get('/rooms', async (req, res) => {
     }
 });
 
-// CREATE a new room
+// --- BAGIAN YANG SUDAH BERSIH DAN FINAL ---
 router.post('/rooms', async (req, res) => {
-    // Ambil image_url dari body, tapi jangan simpan di tabel 'rooms'
     const { name, type, price, quantity, facilities, description, image_url } = req.body;
-    const connection = await db.getConnection();
+    
+    if (!name || !type || !price || !quantity) {
+        return res.status(400).json({ message: 'Nama, tipe, harga, dan kuantitas awal wajib diisi.' });
+    }
 
+    const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
 
-        // 1. Masukkan detail kamar (tanpa URL gambar) ke tabel 'rooms'
         const [insertRoomResult] = await connection.query(
-            'INSERT INTO rooms (name, type, price, quantity, facilities, description) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, type, price, quantity, facilities, description]
+            'INSERT INTO rooms (name, type, facilities, description) VALUES (?, ?, ?, ?)',
+            [name, type, facilities, description]
         );
         const newRoomId = insertRoomResult.insertId;
 
-        // 2. Jika ada URL gambar awal, masukkan ke tabel 'room_images'
-        if (image_url) {
+        if (image_url && image_url.trim() !== '') {
             await connection.query(
                 'INSERT INTO room_images (room_id, image_url, alt_text) VALUES (?, ?, ?)',
-                [newRoomId, image_url, name] // Gunakan nama kamar sebagai alt text
+                [newRoomId, image_url, `Gambar utama untuk ${name}`]
             );
         }
 
+        const availabilityInserts = [];
+        const today = new Date();
+        for (let i = 0; i < 365; i++) {
+            const currentDate = new Date(today);
+            currentDate.setDate(today.getDate() + i);
+            const formattedDate = currentDate.toISOString().split('T')[0];
+            availabilityInserts.push([newRoomId, formattedDate, price, quantity, 1]);
+        }
+        
+        const availabilitySql = 'INSERT INTO room_availability (room_id, `date`, price, available_quantity, is_active) VALUES ?';
+        await connection.query(availabilitySql, [availabilityInserts]);
+
         await connection.commit();
-        res.status(201).json({ message: 'Kamar berhasil ditambahkan' });
+        res.status(201).json({ message: 'Kamar dan inventaris harian berhasil ditambahkan' });
 
     } catch (error) {
         await connection.rollback();
         console.error("Error saat menambah kamar:", error);
         res.status(500).json({ message: 'Server Error saat menambahkan kamar' });
     } finally {
-        connection.release();
+        if (connection) {
+            connection.release();
+        }
     }
 });
 
-// UPDATE a room
+
 router.put('/rooms/:id', async (req, res) => {
     try {
-        // Form edit sekarang hanya mengurus detail teks. Gambar dikelola via galeri.
-        const { name, type, price, quantity, facilities, description } = req.body;
+        const { name, type, facilities, description } = req.body;
         await db.query(
-            'UPDATE rooms SET name = ?, type = ?, price = ?, quantity = ?, facilities = ?, description = ? WHERE id = ?',
-            [name, type, price, quantity, facilities, description, req.params.id]
+            'UPDATE rooms SET name = ?, type = ?, facilities = ?, description = ? WHERE id = ?',
+            [name, type, facilities, description, req.params.id]
         );
-        res.json({ message: 'Kamar berhasil diperbarui' });
+        res.json({ message: 'Detail kamar berhasil diperbarui' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
 
-// DELETE a room
 router.delete('/rooms/:id', async (req, res) => {
     try {
         await db.query('DELETE FROM rooms WHERE id = ?', [req.params.id]);
@@ -138,14 +156,13 @@ router.delete('/rooms/:id', async (req, res) => {
     }
 });
 
+
 // === CRUD BOOKINGS ===
-// GET all bookings
 router.get('/bookings', async (req, res) => {
     try {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
         const offset = (page - 1) * limit;
-
         const [bookings] = await db.query(`
             SELECT 
                 b.id, b.guest_name, b.status,
@@ -158,9 +175,7 @@ router.get('/bookings', async (req, res) => {
             ORDER BY b.created_at DESC
             LIMIT ? OFFSET ?
         `, [limit, offset]);
-
         const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM bookings');
-
         res.json({
             data: bookings,
             totalPages: Math.ceil(total / limit),
@@ -172,30 +187,26 @@ router.get('/bookings', async (req, res) => {
     }
 });
 
-// DELETE a booking
-// PENTING: Saat admin menghapus booking, stok kamar harus dikembalikan jika statusnya 'confirmed'
 router.delete('/bookings/:id', async (req, res) => {
     const { id } = req.params;
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
-
-        // Cek booking yang akan dihapus
         const [bookings] = await connection.query('SELECT * FROM bookings WHERE id = ?', [id]);
         if (bookings.length === 0) {
             await connection.rollback();
             return res.status(404).json({ message: 'Booking tidak ditemukan' });
         }
         const booking = bookings[0];
-
-        // Jika statusnya confirmed, kembalikan stok kamar
         if (booking.status === 'confirmed') {
-            await connection.query('UPDATE rooms SET quantity = quantity + 1 WHERE id = ?', [booking.room_id]);
+             const restoreStockSql = `
+                UPDATE room_availability 
+                SET available_quantity = available_quantity + 1 
+                WHERE room_id = ? AND date >= ? AND date < ?;
+            `;
+            await connection.query(restoreStockSql, [booking.room_id, booking.check_in_date, booking.check_out_date]);
         }
-
-        // Hapus booking
         await connection.query('DELETE FROM bookings WHERE id = ?', [id]);
-
         await connection.commit();
         res.json({ message: 'Booking berhasil dihapus' });
     } catch (error) {
@@ -207,7 +218,6 @@ router.delete('/bookings/:id', async (req, res) => {
     }
 });
 
-// Endpoint untuk admin mengambil detail satu pesanan
 router.get('/booking/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -230,19 +240,16 @@ router.get('/booking/:id', async (req, res) => {
     }
 });
 
+
+// === MANAJEMEN INVENTARIS ===
 router.get('/availability/:roomId', async (req, res) => {
     const { roomId } = req.params;
-    // Ambil bulan dan tahun dari query, default ke bulan ini jika tidak ada
     const year = req.query.year || new Date().getFullYear();
     const month = req.query.month || new Date().getMonth() + 1;
-
     try {
         const availabilitySql = `
             SELECT 
-                id, 
-                date, 
-                available_quantity, 
-                is_active
+                id, date, available_quantity, is_active, price
             FROM room_availability
             WHERE 
                 room_id = ? 
@@ -258,35 +265,28 @@ router.get('/availability/:roomId', async (req, res) => {
     }
 });
 
-// Endpoint untuk memperbarui ketersediaan (jumlah & status aktif)
-// Menerima array of updates untuk efisiensi
 router.put('/availability', async (req, res) => {
-    const { updates } = req.body; // updates akan berbentuk: [{ id: 1, quantity: 8, isActive: true }, { id: 2, ... }]
-
+    const { updates } = req.body;
     if (!updates || !Array.isArray(updates) || updates.length === 0) {
         return res.status(400).json({ message: 'Data update tidak valid' });
     }
-
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
-
-        // Looping melalui setiap update dan jalankan query
         for (const update of updates) {
-            const { id, quantity, isActive } = update;
+            const { id, quantity, isActive, price } = update;
             const updateSql = `
                 UPDATE room_availability 
                 SET 
                     available_quantity = ?, 
-                    is_active = ? 
+                    is_active = ?,
+                    price = ?
                 WHERE id = ?;
             `;
-            await connection.query(updateSql, [quantity, isActive, id]);
+            await connection.query(updateSql, [quantity, isActive, price, id]);
         }
-
         await connection.commit();
         res.json({ message: 'Ketersediaan berhasil diperbarui' });
-
     } catch (error) {
         await connection.rollback();
         console.error(error);
@@ -296,16 +296,12 @@ router.put('/availability', async (req, res) => {
     }
 });
 
-// --- API UNTUK DASHBOARD STATISTIK (FITUR BARU) ---
+
+// === STATISTIK & LAPORAN ===
 router.get('/stats', async (req, res) => {
     try {
-        // 1. Hitung total pengguna (tidak berubah)
         const [usersResult] = await db.query("SELECT COUNT(*) as totalUsers FROM users WHERE role = 'user'");
-        
-        // 2. Hitung total pesanan terkonfirmasi (tidak berubah)
         const [bookingsResult] = await db.query("SELECT COUNT(*) as totalBookings FROM bookings WHERE status = 'confirmed'");
-        
-        // 3. Hitung total pendapatan bulan ini (DIPERBARUI dengan COALESCE)
         const [revenueResult] = await db.query(`
             SELECT SUM(COALESCE(final_price, total_price)) as monthlyRevenue
             FROM bookings
@@ -313,8 +309,6 @@ router.get('/stats', async (req, res) => {
             AND MONTH(check_in_date) = MONTH(CURDATE())
             AND YEAR(check_in_date) = YEAR(CURDATE())
         `);
-        
-        // 4. Ambil 5 pesanan terakhir (tidak berubah)
         const [recentBookings] = await db.query(`
             SELECT b.id, r.name as room_name, u.username as user_username, b.created_at
             FROM bookings b
@@ -323,8 +317,6 @@ router.get('/stats', async (req, res) => {
             ORDER BY b.created_at DESC
             LIMIT 5
         `);
-        
-        // 5. (Untuk Grafik) Ambil pendapatan 6 bulan terakhir (DIPERBARUI dengan COALESCE)
         const [monthlyRevenueData] = await db.query(`
             SELECT 
                 DATE_FORMAT(check_in_date, '%Y-%m') AS month,
@@ -334,7 +326,6 @@ router.get('/stats', async (req, res) => {
             GROUP BY month
             ORDER BY month ASC;
         `);
-
         res.json({
             totalUsers: usersResult[0].totalUsers,
             totalBookings: bookingsResult[0].totalBookings,
@@ -342,204 +333,18 @@ router.get('/stats', async (req, res) => {
             recentBookings,
             monthlyRevenueChart: monthlyRevenueData
         });
-
     } catch (error) {
         console.error("Error fetching admin stats:", error);
         res.status(500).json({ message: "Server Error" });
     }
 });
 
-router.get('/bookings/new-count', async (req, res) => {
-    try {
-        const [[{ count }]] = await db.query("SELECT COUNT(*) as count FROM bookings WHERE is_new = TRUE");
-        res.json({ count });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-// --- ENDPOINT BARU UNTUK MENYETUJUI PESANAN ---
-router.put('/bookings/:id/confirm', async (req, res) => {
-    const { id } = req.params;
-    try {
-        // Update status menjadi 'confirmed' dan tandai sebagai tidak baru lagi (is_new = FALSE)
-        // Ini akan secara otomatis mengurangi jumlah notifikasi
-        const [result] = await db.query(
-            "UPDATE bookings SET status = 'confirmed', is_new = FALSE WHERE id = ? AND status = 'pending'",
-            [id]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau sudah dikonfirmasi.' });
-        }
-        
-        res.json({ message: 'Pesanan berhasil dikonfirmasi.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-router.put('/bookings/:id/reject', async (req, res) => {
-    const { id } = req.params;
-    const connection = await db.getConnection();
-
-    try {
-        await connection.beginTransaction();
-
-        // 1. Dapatkan detail booking yang akan ditolak
-        const [bookings] = await connection.query(
-            "SELECT * FROM bookings WHERE id = ? AND status = 'pending' FOR UPDATE",
-            [id]
-        );
-
-        if (bookings.length === 0) {
-            await connection.rollback();
-            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau statusnya bukan pending.' });
-        }
-        const booking = bookings[0];
-
-        // 2. Ubah status booking menjadi 'rejected' dan tandai sebagai tidak baru lagi
-        await connection.query(
-            "UPDATE bookings SET status = 'rejected', is_new = FALSE WHERE id = ?",
-            [id]
-        );
-
-        // 3. Kembalikan stok kamar untuk setiap hari dalam rentang tanggal pesanan
-        const restoreStockSql = `
-            UPDATE room_availability 
-            SET available_quantity = available_quantity + 1 
-            WHERE room_id = ? AND date >= ? AND date < ?;
-        `;
-        await connection.query(restoreStockSql, [booking.room_id, booking.check_in_date, booking.check_out_date]);
-
-        await connection.commit();
-        res.json({ message: 'Pesanan berhasil ditolak.' });
-
-    } catch (error) {
-        await connection.rollback();
-        console.error(error);
-        res.status(500).json({ message: 'Server Error saat menolak pesanan.' });
-    } finally {
-        connection.release();
-    }
-});
-
-
-// GET semua gambar untuk satu kamar
-router.get('/rooms/:roomId/images', async (req, res) => {
-    try {
-        const { roomId } = req.params;
-        const [images] = await db.query('SELECT * FROM room_images WHERE room_id = ? ORDER BY id ASC', [roomId]);
-        res.json(images);
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-// POST (menambahkan) gambar baru ke kamar
-router.post('/rooms/:roomId/images', async (req, res) => {
-    try {
-        const { roomId } = req.params;
-        const { image_url, alt_text } = req.body;
-
-        if (!image_url) {
-            return res.status(400).json({ message: 'URL gambar diperlukan' });
-        }
-
-        await db.query(
-            'INSERT INTO room_images (room_id, image_url, alt_text) VALUES (?, ?, ?)',
-            [roomId, image_url, alt_text || 'Gambar kamar']
-        );
-        res.status(201).json({ message: 'Gambar berhasil ditambahkan' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-// DELETE satu gambar spesifik
-router.delete('/images/:imageId', async (req, res) => {
-    try {
-        const { imageId } = req.params;
-        await db.query('DELETE FROM room_images WHERE id = ?', [imageId]);
-        res.json({ message: 'Gambar berhasil dihapus' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-
-// GET (Read) semua kode promo
-router.get('/promos', async (req, res) => {
-    try {
-        const [promos] = await db.query('SELECT * FROM promos ORDER BY created_at DESC');
-        res.json(promos);
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-// POST (Create) kode promo baru
-router.post('/promos', async (req, res) => {
-    const { code, discount_percentage, expiry_date } = req.body;
-    if (!code || !discount_percentage || !expiry_date) {
-        return res.status(400).json({ message: 'Semua field diperlukan.' });
-    }
-    try {
-        await db.query(
-            'INSERT INTO promos (code, discount_percentage, expiry_date) VALUES (?, ?, ?)',
-            [code.toUpperCase(), discount_percentage, expiry_date]
-        );
-        res.status(201).json({ message: 'Kode promo berhasil dibuat.' });
-    } catch (error) {
-        // Tangani error jika kode sudah ada (karena UNIQUE constraint)
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'Kode promo ini sudah ada.' });
-        }
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-
-// PUT (Update) kode promo
-router.put('/promos/:id', async (req, res) => {
-    const { id } = req.params;
-    const { discount_percentage, expiry_date, is_active } = req.body;
-    try {
-        await db.query(
-            'UPDATE promos SET discount_percentage = ?, expiry_date = ?, is_active = ? WHERE id = ?',
-            [discount_percentage, expiry_date, is_active, id]
-        );
-        res.json({ message: 'Kode promo berhasil diperbarui.' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-
-// DELETE kode promo
-router.delete('/promos/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await db.query('DELETE FROM promos WHERE id = ?', [id]);
-        res.json({ message: 'Kode promo berhasil dihapus.' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-
-// --- API BARU UNTUK LAPORAN (FITUR BARU) ---
 router.get('/reports', async (req, res) => {
     const { startDate, endDate } = req.query;
-
     if (!startDate || !endDate) {
         return res.status(400).json({ message: 'Rentang tanggal (startDate dan endDate) diperlukan.' });
     }
-
     try {
-        // --- PERBAIKAN DI SINI ---
-        // Menggunakan COALESCE untuk memastikan semua pesanan terhitung
         const [summary] = await db.query(`
             SELECT
                 COUNT(id) AS totalBookings,
@@ -548,8 +353,6 @@ router.get('/reports', async (req, res) => {
             WHERE status = 'confirmed'
             AND check_in_date BETWEEN ? AND ?;
         `, [startDate, endDate]);
-
-        // Query Kamar Terpopuler (tidak perlu diubah)
         const [popularRooms] = await db.query(`
             SELECT
                 r.name,
@@ -562,7 +365,6 @@ router.get('/reports', async (req, res) => {
             ORDER BY bookingCount DESC
             LIMIT 5;
         `, [startDate, endDate]);
-        
         res.json({
             summary: {
                 totalBookings: summary[0].totalBookings || 0,
@@ -570,7 +372,6 @@ router.get('/reports', async (req, res) => {
             },
             popularRooms
         });
-
     } catch (error) {
         console.error("Error fetching reports:", error);
         res.status(500).json({ message: "Server Error saat membuat laporan." });
@@ -578,21 +379,79 @@ router.get('/reports', async (req, res) => {
 });
 
 
-// --- KONFIGURASI MULTER UNTUK PENYIMPANAN FILE ---
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Tentukan folder penyimpanan
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        // Buat nama file yang unik untuk menghindari konflik
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+// === NOTIFIKASI & PERSETUJUAN PESANAN ===
+router.get('/bookings/new-count', async (req, res) => {
+    try {
+        const [[{ count }]] = await db.query("SELECT COUNT(*) as count FROM bookings WHERE is_new = TRUE");
+        res.json({ count });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
-const upload = multer({ storage: storage });
+router.put('/bookings/:id/confirm', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query(
+            "UPDATE bookings SET status = 'confirmed', is_new = FALSE WHERE id = ? AND status = 'pending'",
+            [id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau sudah dikonfirmasi.' });
+        }
+        res.json({ message: 'Pesanan berhasil dikonfirmasi.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 
+router.put('/bookings/:id/reject', async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [bookings] = await connection.query(
+            "SELECT * FROM bookings WHERE id = ? AND status = 'pending' FOR UPDATE",
+            [id]
+        );
+        if (bookings.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan atau statusnya bukan pending.' });
+        }
+        const booking = bookings[0];
+        await connection.query(
+            "UPDATE bookings SET status = 'rejected', is_new = FALSE WHERE id = ?",
+            [id]
+        );
+        const restoreStockSql = `
+            UPDATE room_availability 
+            SET available_quantity = available_quantity + 1 
+            WHERE room_id = ? AND date >= ? AND date < ?;
+        `;
+        await connection.query(restoreStockSql, [booking.room_id, booking.check_in_date, booking.check_out_date]);
+        await connection.commit();
+        res.json({ message: 'Pesanan berhasil ditolak.' });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ message: 'Server Error saat menolak pesanan.' });
+    } finally {
+        connection.release();
+    }
+});
+
+
+// === MANAJEMEN GALERI & PROMO ===
+router.get('/rooms/:roomId/images', async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        const [images] = await db.query('SELECT * FROM room_images WHERE room_id = ? ORDER BY id ASC', [roomId]);
+        res.json(images);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 
 router.post('/rooms/:roomId/upload-image', upload.single('image'), async (req, res) => {
     const { roomId } = req.params;
@@ -612,7 +471,67 @@ router.post('/rooms/:roomId/upload-image', upload.single('image'), async (req, r
     }
 });
 
+router.delete('/images/:imageId', async (req, res) => {
+    try {
+        const { imageId } = req.params;
+        await db.query('DELETE FROM room_images WHERE id = ?', [imageId]);
+        res.json({ message: 'Gambar berhasil dihapus' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 
+router.get('/promos', async (req, res) => {
+    try {
+        const [promos] = await db.query('SELECT * FROM promos ORDER BY created_at DESC');
+        res.json(promos);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+router.post('/promos', async (req, res) => {
+    const { code, discount_percentage, expiry_date } = req.body;
+    if (!code || !discount_percentage || !expiry_date) {
+        return res.status(400).json({ message: 'Semua field diperlukan.' });
+    }
+    try {
+        await db.query(
+            'INSERT INTO promos (code, discount_percentage, expiry_date) VALUES (?, ?, ?)',
+            [code.toUpperCase(), discount_percentage, expiry_date]
+        );
+        res.status(201).json({ message: 'Kode promo berhasil dibuat.' });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Kode promo ini sudah ada.' });
+        }
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+router.put('/promos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { discount_percentage, expiry_date, is_active } = req.body;
+    try {
+        await db.query(
+            'UPDATE promos SET discount_percentage = ?, expiry_date = ?, is_active = ? WHERE id = ?',
+            [discount_percentage, expiry_date, is_active, id]
+        );
+        res.json({ message: 'Kode promo berhasil diperbarui.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+router.delete('/promos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM promos WHERE id = ?', [id]);
+        res.json({ message: 'Kode promo berhasil dihapus.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 
 
 module.exports = router;

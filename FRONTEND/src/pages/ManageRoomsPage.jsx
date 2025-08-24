@@ -16,20 +16,16 @@ function ManageRoomsPage() {
   const [editingRoom, setEditingRoom] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState(null);
-
-  // State untuk modal galeri
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const [selectedRoomForGallery, setSelectedRoomForGallery] = useState(null);
 
-
   const fetchRooms = useCallback(async () => {
-   setLoading(true);
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5001/api/admin/rooms', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // PERBAIKAN 1: Gunakan setAllRooms yang benar
       setAllRooms(response.data);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal mengambil data kamar');
@@ -47,7 +43,7 @@ function ManageRoomsPage() {
       if (filters.search && !room.name.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;
       }
-      const price = room.price;
+      const price = room.price; // Asumsi price ada di data room untuk filtering
       const { min, max } = filters.price;
       if (min !== null && price < min) return false;
       if (max !== null && price > max) return false;
@@ -68,36 +64,57 @@ function ManageRoomsPage() {
     setEditingRoom(null);
   };
 
-  // --- Handler untuk Modal Galeri ---
   const handleOpenGalleryModal = (room) => {
-      setSelectedRoomForGallery(room);
-      setIsGalleryModalOpen(true);
+    setSelectedRoomForGallery(room);
+    setIsGalleryModalOpen(true);
   };
 
   const handleCloseGalleryModal = () => {
-      setIsGalleryModalOpen(false);
-      setSelectedRoomForGallery(null);
+    setIsGalleryModalOpen(false);
+    setSelectedRoomForGallery(null);
   };
 
+  // --- PERBAIKAN UTAMA DI FUNGSI INI ---
   const handleFormSubmit = async (data) => {
     const toastId = toast.loading('Menyimpan data...');
     const token = localStorage.getItem('token');
     try {
-        if (editingRoom) {
-            await axios.put(`http://localhost:5001/api/admin/rooms/${editingRoom.id}`, data, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success('Kamar berhasil diperbarui', { id: toastId });
-        } else {
-            await axios.post('http://localhost:5001/api/admin/rooms', data, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success('Kamar baru berhasil ditambahkan', { id: toastId });
-        }
-        fetchRooms();
-        handleCloseFormModal();
+      if (editingRoom) {
+        // --- LOGIKA EDIT ---
+        // Saat mengedit, kita hanya mengirim data deskriptif.
+        // Harga dan kuantitas diatur di halaman inventaris.
+        const payload = {
+            name: data.name,
+            type: data.type,
+            facilities: data.facilities,
+            description: data.description,
+        };
+        await axios.put(`http://localhost:5001/api/admin/rooms/${editingRoom.id}`, payload, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Kamar berhasil diperbarui', { id: toastId });
+      } else {
+        // --- LOGIKA TAMBAH BARU ---
+        // Saat menambah, kita WAJIB mengirim 'price' dan 'quantity'
+        // agar backend bisa membuat inventaris awal.
+        const payload = {
+            name: data.name,
+            type: data.type,
+            price: data.price, // Pastikan ini terkirim
+            quantity: data.quantity, // Pastikan ini terkirim
+            facilities: data.facilities,
+            description: data.description,
+            image_url: data.image_url,
+        };
+        await axios.post('http://localhost:5001/api/admin/rooms', payload, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        toast.success('Kamar baru berhasil ditambahkan', { id: toastId });
+      }
+      fetchRooms();
+      handleCloseFormModal();
     } catch (error) {
-        toast.error(error.response?.data?.message || 'Gagal menyimpan data', { id: toastId });
+      toast.error(error.response?.data?.message || 'Gagal menyimpan data', { id: toastId });
     }
   };
 
@@ -122,7 +139,7 @@ function ManageRoomsPage() {
       fetchRooms();
       closeDeleteModal();
     } catch (error) {
-      toast.error(error.response?.data?.message||'Gagal menghapus kamar');
+      toast.error(error.response?.data?.message || 'Gagal menghapus kamar');
     }
   };
 
@@ -155,7 +172,6 @@ function ManageRoomsPage() {
                   room={room} 
                   onEdit={handleOpenFormModal} 
                   onDelete={openDeleteModal}
-                  // PERBAIKAN 2: Hubungkan handler galeri
                   onGallery={handleOpenGalleryModal}
                 />
               ))}
@@ -185,9 +201,9 @@ function ManageRoomsPage() {
       />
 
       <GalleryModal
-          isOpen={isGalleryModalOpen}
-          onClose={handleCloseGalleryModal}
-          room={selectedRoomForGallery}
+        isOpen={isGalleryModalOpen}
+        onClose={handleCloseGalleryModal}
+        room={selectedRoomForGallery}
       />
     </div>
   );
