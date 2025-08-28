@@ -6,7 +6,7 @@ import PromoFormModal from '../components/admin/PromoFormModal';
 import ConfirmationModal from '../components/admin/ConfirmationModal';
 
 // --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function ManagePromosPage() {
     const [promos, setPromos] = useState([]);

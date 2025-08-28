@@ -40,7 +40,7 @@ function BookRoomPage() {
             setLoading(true);
             setAvailableRooms([]);
             
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const apiUrl = import.meta.env.VITE_API_URL;
             const response = await axios.get(`${apiUrl}/api/public/rooms`, {
                 params: {
                     checkInDate: formatDate(checkInDate),
@@ -103,7 +103,7 @@ function BookRoomPage() {
         const toastId = toast.loading('Memproses pesanan...');
         const token = localStorage.getItem('token');
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const apiUrl = import.meta.env.VITE_API_URL;
            const response = await axios.post(`${apiUrl}/api/public/bookings`,
                 { 
                     ...data, 

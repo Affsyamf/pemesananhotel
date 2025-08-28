@@ -27,7 +27,7 @@ function RegisterPage() {
     const toastId = toast.loading('Membuat akun...');
 
     try {
-       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const apiUrl = import.meta.env.VITE_API_URL;
       await axios.post(`${apiUrl}/api/auth/register`, formData);
       toast.success('Pendaftaran berhasil! Silakan login.', { id: toastId });
       navigate('/login');

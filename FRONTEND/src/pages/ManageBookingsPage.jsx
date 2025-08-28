@@ -22,7 +22,7 @@ function ManageBookingsPage() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const apiUrl = import.meta.env.VITE_API_URL;
             const response = await axios.get(`${apiUrl}/api/admin/bookings?page=${page}&limit=10`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -47,7 +47,7 @@ function ManageBookingsPage() {
         const toastId = toast.loading('Menyetujui pesanan...');
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const apiUrl = import.meta.env.VITE_API_URL;
             await axios.put(`${apiUrl}/api/admin/bookings/${bookingId}/confirm`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -74,7 +74,7 @@ function ManageBookingsPage() {
         const toastId = toast.loading('Menolak pesanan...');
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+           const apiUrl = import.meta.env.VITE_API_URL;
             await axios.put(`${apiUrl}/api/admin/bookings/${bookingToReject.id}/reject`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -102,7 +102,7 @@ function ManageBookingsPage() {
         const toastId = toast.loading('Menghapus pesanan...');
         try {
             const token = localStorage.getItem('token');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+            const apiUrl = import.meta.env.VITE_API_URL;
             await axios.delete(`${apiUrl}/api/admin/bookings/${bookingToDelete.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });

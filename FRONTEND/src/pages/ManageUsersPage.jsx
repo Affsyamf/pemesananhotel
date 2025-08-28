@@ -9,7 +9,7 @@ import ConfirmationModal from '../components/admin/ConfirmationModal';
 import GalleryModal from '../components/admin/GalleryModal';
 
 // --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function ManageRoomsPage() {
   const [allRooms, setAllRooms] = useState([]);

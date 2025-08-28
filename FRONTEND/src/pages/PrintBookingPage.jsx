@@ -13,7 +13,7 @@ function PrintBookingPage() {
         const fetchBookingDetails = async () => {
             try {
                 const token = localStorage.getItem('token');
-                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+                 const apiUrl = import.meta.env.VITE_API_URL;
                 const response = await axios.get(`${apiUrl}/api/public/booking/${bookingId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });

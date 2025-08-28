@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 
 // --- PERBAIKAN 1: Deklarasikan apiUrl satu kali di luar komponen ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function ManageAvailabilityPage() {
     const [rooms, setRooms] = useState([]);

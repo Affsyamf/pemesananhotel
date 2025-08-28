@@ -8,7 +8,7 @@ import ReviewForm from '../components/ReviewForm';
 import StarRating from '../components/StarRating';
 
 // --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function RoomDetailPage() {
   const { roomId } = useParams();

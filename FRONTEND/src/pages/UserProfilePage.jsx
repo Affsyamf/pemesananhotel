@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { User, Lock, Save } from 'lucide-react';
 
 // --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function UserProfilePage() {
     const [user, setUser] = useState(null);

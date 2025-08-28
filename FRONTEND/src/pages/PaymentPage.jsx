@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { CreditCard, Loader } from 'lucide-react';
 
 // --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function PaymentPage() {
     const { bookingId } = useParams();

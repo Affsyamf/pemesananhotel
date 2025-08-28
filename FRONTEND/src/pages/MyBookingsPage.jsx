@@ -7,7 +7,7 @@ import ConfirmationModal from '../components/admin/ConfirmationModal';
 import Pagination from '../components/admin/Pagination';
 
 // --- PERBAIKAN: Deklarasikan apiUrl satu kali di sini ---
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function MyBookingsPage() {
   const [pageData, setPageData] = useState({ data: [], totalPages: 1, currentPage: 1 });

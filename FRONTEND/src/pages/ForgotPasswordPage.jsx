@@ -14,7 +14,7 @@ function ForgotPasswordPage() {
         setLoading(true);
         setMessage('');
         try {
-             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+           const apiUrl = import.meta.env.VITE_API_URL;
             const response = await axios.post(`${apiUrl}/api/auth/forgot-password`, { email });
             setMessage(response.data.message);
             toast.success('Permintaan terkirim!');
