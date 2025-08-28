@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'; // <-- PERBAIKAN: Tambahkan useEffect
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Hotel, ListChecks, LogOut, Menu, Users, CalendarDays, LayoutDashboard, Tag, BarChart  } from 'lucide-react';
+import { Hotel, ListChecks, LogOut, Menu, Users, CalendarDays, LayoutDashboard, Tag, BarChart } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
-import axios from 'axios'; // <-- PERBAIKAN: Tambahkan import axios
+import axios from 'axios';
 
 const SidebarLink = ({ to, icon, children, onClick, notificationCount }) => (
   <NavLink
@@ -31,29 +31,23 @@ function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [newBookingsCount, setNewBookingsCount] = useState(0);
 
-  // --- PERBAIKAN: useEffect yang hilang ---
-  // Logika ini penting untuk mengambil data notifikasi dari backend
   useEffect(() => {
     const fetchNewBookingsCount = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5001/api/admin/bookings/new-count', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setNewBookingsCount(response.data.count);
-      } catch (error) {
-        // Abaikan error agar tidak mengganggu
-        console.error("Gagal fetch notifikasi:", error);
-      }
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = import.meta.env.VITE_API_URL;
+
+            const response = await axios.get(`${apiUrl}/api/admin/bookings/new-count`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNewBookingsCount(response.data.count);
+        } catch (error) {
+            console.error("Gagal fetch notifikasi:", error);
+        }
     };
 
-    // Panggil sekali saat komponen dimuat
     fetchNewBookingsCount();
-
-    // Set interval untuk memeriksa notifikasi setiap 30 detik
     const intervalId = setInterval(fetchNewBookingsCount, 30000);
-
-    // Bersihkan interval saat komponen di-unmount
     return () => clearInterval(intervalId);
   }, []);
 
@@ -64,7 +58,6 @@ function AdminLayout() {
   
   const handleLinkClick = () => {
       setIsSidebarOpen(false);
-      // Saat link pesanan diklik, langsung reset notifikasi di frontend
       if (window.location.pathname.includes('/admin/bookings')) {
           setNewBookingsCount(0);
       }
@@ -81,13 +74,13 @@ function AdminLayout() {
         </div>
 
         <nav className="mt-10">
-          {/* PERBAIKAN: Gunakan handleLinkClick untuk semua link */}
           <SidebarLink to="/admin/dashboard" icon={<LayoutDashboard className="w-5 h-5" />} onClick={handleLinkClick}>Dashboard</SidebarLink>
           <SidebarLink to="/admin/users" icon={<Users className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Pengguna</SidebarLink>
           <SidebarLink to="/admin/rooms" icon={<Hotel className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Kamar</SidebarLink>
           <SidebarLink to="/admin/availability" icon={<CalendarDays className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Inventaris</SidebarLink>
-          <SidebarLink to="/admin/promos" icon={<Tag className="w-5 h-5" />}>Kelola Promo</SidebarLink>
-          <SidebarLink to="/admin/reports" icon={<BarChart className="w-5 h-5" />}>Laporan</SidebarLink>
+          {/* --- PERBAIKAN: Tambahkan onClick di sini --- */}
+          <SidebarLink to="/admin/promos" icon={<Tag className="w-5 h-5" />} onClick={handleLinkClick}>Kelola Promo</SidebarLink>
+          <SidebarLink to="/admin/reports" icon={<BarChart className="w-5 h-5" />} onClick={handleLinkClick}>Laporan</SidebarLink>
           <SidebarLink 
             to="/admin/bookings" 
             icon={<ListChecks className="w-5 h-5" />} 
